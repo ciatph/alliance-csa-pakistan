@@ -5,7 +5,7 @@
 ### Requirements
 
 1. NodeJS v12.16.6
-   - v12.16.6 was used but feel free to use other versions
+   - v12.16.6 was used for this project but feel free to use other versions
 
 ## Installation
 
