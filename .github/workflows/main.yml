@@ -8,7 +8,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-
+      - name: Install modules
+        run: npm install
+      - name: Lint
+        run: npm run lint
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:

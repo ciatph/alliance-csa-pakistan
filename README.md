@@ -6,7 +6,6 @@
 
 ### Content
 
-- [Content](#content)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)

@@ -5,11 +5,40 @@
   "main": "index.js",
   "scripts": {
     "dev": "./node_modules/.bin/gulp dev",
+    "lint": "eslint --ignore-path .gitignore public",
+    "lint:fix": "eslint --ignore-path .gitignore --fix public",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ciatph/pakistan_web_dev.git"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "commonjs": true,
+      "es6": true
+    },
+    "extends": [
+      "standard",
+      "eslint:recommended"
+    ],
+    "globals": {
+      "Atomics": "readonly",
+      "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+      "ecmaVersion": 2018
+    },
+    "rules": {
+      "indent": ["error", 2],
+      "linebreak-style": ["error", "unix"],
+      "quotes": ["error", "single"],
+      "semi": ["error", "never"],
+      "camelcase": 0,
+      "no-unused-vars": "off",
+      "no-undef": "off"
+    }
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +48,12 @@
   "homepage": "https://github.com/ciatph/pakistan_web_dev#readme",
   "devDependencies": {
     "browser-sync": "^2.26.14",
+    "eslint": "^7.24.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-standard": "^5.0.0",
     "gulp": "^4.0.2"
   }
 }
