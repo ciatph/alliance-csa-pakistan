@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - testing-raw-updates
+      - dev
 
 jobs:
   deploy:
