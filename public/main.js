@@ -57,11 +57,13 @@ let map_i
 let map
 // Base Data URL
 const baseDataURL = window.location.pathname
+// Map Data
+let mapData
 
 /**
  * This function change the type of information and functionalities of the web page depending of the value
  */
-function click_tab (tab_selected) {
+async function click_tab (tab_selected) {
   tab = tab_selected
   $('.tab_layout').addClass('d-none')
   $('#general').removeClass('d-none')
@@ -220,6 +222,12 @@ function click_tab (tab_selected) {
   }).addTo(map)
 
   const layer_url = `${baseDataURL}data/maps/pakistan_map.json`
+
+  if (!mapData) {
+    mapData = await loadMapData()
+    console.log('---map data loaded!')
+  }
+
   $.getJSON(layer_url, function (data) {
     L.geoJSON(data, { onEachFeature: onEachFeature }).addTo(map)
   })
@@ -299,7 +307,7 @@ function cropping_calendar_hazard (crop_c, hazard_c) {
       table = table + '<td class="crop_c_' + cell.value + '" ' +
                         'data-toggle="tooltip" ' +
                         // 'data-position="bottom" '  +
-                        'title="' + cell.practices + '"></td>'
+                        'title="' + cell['management Practices'] + '"></td>'
       // 'data-tooltip="' + cell.practices + '"></td>';
     })
     table = table + '</tr>'
@@ -837,14 +845,16 @@ function enablers_fill (data) {
  * Function for each feature into the map
  */
 function onEachFeature (feature, layer) {
-  d3.csv(`${baseDataURL}data/maps/pakistan_data.csv`, function (error, data) {
-    if (error) { console.log(error) }
-    const district = data.filter(function (item) { return item.NAME_3 === layer.feature.properties.NAME_3 })
-    layer.setStyle({
-      fillColor: district.length > 0 && district[0][tab] === '1' ? '#0099e6' : '#a6a6a6',
-      fillOpacity: 0.8,
-      weight: 0.5
-    })
+  if (!mapData) {
+    console.log('--must load the map data first.')
+    return
+  }
+
+  const districtTemp = mapData.filter(function (item) { return item.NAME_3 === layer.feature.properties.NAME_3 })
+  layer.setStyle({
+    fillColor: districtTemp.length > 0 && districtTemp[0][tab] === '1' ? '#0099e6' : '#a6a6a6',
+    fillOpacity: 0.8,
+    weight: 0.5
   })
 
   layer.on('click', function (e) {
@@ -855,6 +865,18 @@ function onEachFeature (feature, layer) {
     $('#txt_site_selected').html(province + ' - ' + district)
   })
 }
+/**
+ * Function to load the map CSV data only once
+ */
+const loadMapData = () => new Promise((resolve, reject) => {
+  d3.csv(`${baseDataURL}data/maps/pakistan_data.csv`, function (error, data) {
+    if (error) {
+      reject(error)
+    } else {
+      resolve(data)
+    }
+  })
+})
 
 // Default tab
 click_tab('intro')
