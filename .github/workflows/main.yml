@@ -1,14 +1,17 @@
 on:
   push:
     branches:
-      - dev
+      - testing-raw-updates
 
 jobs:
   deploy:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-
+      - name: Install modules
+        run: npm install
+      - name: Lint
+        run: eslint --ignore-path .gitignore public
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
