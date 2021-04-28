@@ -11,7 +11,7 @@ jobs:
       - name: Install modules
         run: npm install
       - name: Lint
-        run: eslint --ignore-path .gitignore public
+        run: npm run lint
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
