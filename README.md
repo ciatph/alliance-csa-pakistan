@@ -1,6 +1,17 @@
 ## pakistan_web_dev
 
 > This forked repository serves as a personal stash for storing the requested updates and follow-up fixes for the original website on https://ciat-dapa.github.io/pakistan_web/.
+>
+> Test Site is available on https://ciatph.github.io/pakistan_web_dev. 
+
+### Content
+
+- [Content](#content)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Deployment](#deployment)
+
 
 ### Requirements
 
@@ -28,6 +39,11 @@
    - add new `html/css/js` files in the **/public** directory.
    - Restart the localhost web server.  
 `npm run dev`
+
+
+## Deployment
+
+Push updates into the dev branch to trigger GitHub workflows ci/cd to the gh-pages branch. Updates will be viewable on https://ciatph.github.io/pakistan_web_dev after the deployment has finished.
 
 @ciatph  
 20210427
