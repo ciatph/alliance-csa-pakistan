@@ -33,6 +33,8 @@ tab = ''
 // Controls
 let map_i
 let map
+// Base Data URL
+const baseDataURL = window.location.pathname
 
 /**
  * This function change the type of information and functionalities of the web page depending of the value
@@ -56,13 +58,13 @@ function click_tab (tab_selected) {
     $('#title').html('Cropping system')
     $('#description').html('In this tab you will find cropping and livestock data for each of the districts included in the study, based on the most recent provincial crop reporting data. Then for each of the villages in the province for which a CSV plan was prepared, you will find the cropping and hazard calendar constructed through village level consultations.')
     $('#cropping').removeClass('d-none')
-    d3.csv('/data/cropping/production.csv', function (error, data) {
+    d3.csv(`${baseDataURL}data/cropping/production.csv`, function (error, data) {
       if (error) { console.log(error) }
       const c_production = data.filter(function (item) { return item.district === district })
-      d3.csv('/data/cropping/cropping_calendar.csv', function (error, data2) {
+      d3.csv(`${baseDataURL}data/cropping/cropping_calendar.csv`, function (error, data2) {
         if (error) { console.log(error) }
         crop_c_full = data2.filter(function (item) { return item.district === district })
-        d3.csv('/data/cropping/hazard.csv', function (error, data3) {
+        d3.csv(`${baseDataURL}data/cropping/hazard.csv`, function (error, data3) {
           if (error) { console.log(error) }
           hazard_c_full = data3.filter(function (item) { return item.district === district })
           cropping_fill(c_production)
@@ -97,7 +99,7 @@ function click_tab (tab_selected) {
     $('#title').html('Climate impacts')
     $('#description').html('This tab presents the results of the climate impact analysis where value chain experts in each of the districts identified the impacts of certain hazards on key commodity value chains for the district. The impacts are ordered with those that were selected the most frequently at the top. It is possible to further filter the impacts looking at specific hazards of commodity value chains.')
     $('#impacts').removeClass('d-none')
-    d3.csv('/data/impacts/impacts.csv', function (error, data) {
+    d3.csv(`${baseDataURL}data/impacts/impacts.csv`, function (error, data) {
       if (error) { console.log(error) }
       hazard_d = data.filter(function (item) { return item.district === district })
       // Filling the cbo controls with hazard and crops
@@ -134,7 +136,7 @@ function click_tab (tab_selected) {
     $('#title').html('Climate risk')
     $('#description').html('This tab presents a risk matrix generated through responses from agricultural experts in the districts on the frequency and severity of major hazards.')
     $('#risk').removeClass('d-none')
-    d3.csv('/data/risk/risk.csv', function (error, data) {
+    d3.csv(`${baseDataURL}data/risk/risk.csv`, function (error, data) {
       if (error) { console.log(error) }
       const risk_d = data.filter(function (item) { return item.district === district })
       risk_fill(risk_d)
@@ -143,7 +145,7 @@ function click_tab (tab_selected) {
     $('#title').html('Practices')
     $('#description').html('This tab presents the types of CSA practices prioritised by experts in the district, along with the areas were they have an impact, the hazards they address, and the barriers to adoption. the practices can be filtered by the commodity they look at, the areas where they have an impact or the types of hazards they address, allowing decision makers to identify practices that address certain priority issues.')
     $('#practices').removeClass('d-none')
-    d3.csv('/data/practices/practices.csv', function (error, data) {
+    d3.csv(`${baseDataURL}data/practices/practices.csv`, function (error, data) {
       if (error) { console.log(error) }
       practices_d = data.filter(function (item) { return item.district === district })
 
@@ -197,7 +199,7 @@ function click_tab (tab_selected) {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map)
 
-  const layer_url = '/data/maps/pakistan_map.json'
+  const layer_url = `${baseDataURL}data/maps/pakistan_map.json`
   $.getJSON(layer_url, function (data) {
     L.geoJSON(data, { onEachFeature: onEachFeature }).addTo(map)
   })
@@ -304,16 +306,16 @@ function cropping_calendar_hazard (crop_c, hazard_c) {
  * Function which loads and draws all plots for climate section
  */
 function climate_load () {
-  d3.csv('/data/climate/climatology.csv', function (error, data) {
+  d3.csv(`${baseDataURL}data/climate/climatology.csv`, function (error, data) {
     if (error) { console.log(error) }
     const climatology = data.filter(function (item) { return item.district === district })
-    d3.csv('/data/climate/gcm.csv', function (error, data2) {
+    d3.csv(`${baseDataURL}data/climate/gcm.csv`, function (error, data2) {
       if (error) { console.log(error) }
       const gcm = data2.filter(function (item) { return item.district === district })
 
       climate_fill(climatology, gcm)
 
-      d3.csv('/data/climate/indicators.csv', function (error, data3) {
+      d3.csv(`${baseDataURL}data/climate/indicators.csv`, function (error, data3) {
         if (error) { console.log(error) }
         climate_indicator_d = data3.filter(function (item) { return item.district === district })
 
@@ -605,7 +607,7 @@ function climate_indicator_fill (indicator, season) {
     .domain([min, max])
     .range([0, 1])
 
-  const indicator_url = '/data/climate/' + season + '_new_version.json'
+  const indicator_url = `${baseDataURL}data/climate/${season}_new_version.json`
   $.getJSON(indicator_url, function (data) {
     L.geoJSON(data, { filter: filter_map, onEachFeature: onEachFeature2, weight: 0.5 }).addTo(map_i)
   })
@@ -784,7 +786,7 @@ function risk_fill (data) {
 
 function enablers_load () {
   type_agg = $('#cbo_enablers_agg').val()
-  d3.csv('/data/enablers/enablers_' + type_agg + '.csv', function (error, data) {
+  d3.csv(`${baseDataURL}data/enablers/enablers_${type_agg}.csv`, function (error, data) {
     if (error) { console.log(error) }
     let enablers = null
     if (type_agg === 'dist') { enablers = data.filter(function (item) { return item.district === district }) } else if (type_agg === 'prov') { enablers = data.filter(function (item) { return item.province === province }) } else { enablers = data }
@@ -815,7 +817,7 @@ function enablers_fill (data) {
  * Function for each feature into the map
  */
 function onEachFeature (feature, layer) {
-  d3.csv('/data/maps/pakistan_data.csv', function (error, data) {
+  d3.csv(`${baseDataURL}data/maps/pakistan_data.csv`, function (error, data) {
     if (error) { console.log(error) }
     const district = data.filter(function (item) { return item.NAME_3 === layer.feature.properties.NAME_3 })
     layer.setStyle({
