@@ -187,8 +187,6 @@ function click_tab (tab_selected) {
   }
 
   if (map) {
-    console.log('--map')
-    console.log(map)
     map.off()
     map.remove()
   }
@@ -591,7 +589,7 @@ function climate_indicator_fill (indicator, season) {
     return ind_p
   })
 
-  if (map_i !== null) {
+  if (map_i) {
     map_i.off()
     map_i.remove()
   }
