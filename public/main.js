@@ -1,16 +1,38 @@
 // Global function
 jQuery(document).ready(function () {
   $('[data-toggle="tooltip"]').tooltip()
+
+  // Set tab click event listeners
+  const tabBtns = Object.values($('ul.navbar-nav').children('li').children('a'))
+
+  for (let i = 0; i < tabBtns.length; i += 1) {
+    if (tabBtns[i].innerText) {
+      text = tabBtns[i].innerText.trim().toLowerCase()
+
+      switch (text) {
+      case 'intro': tabBtns[i].addEventListener('click', () => click_tab('intro')); break
+      case 'site selection': tabBtns[i].addEventListener('click', () => click_tab('site')); break
+      case 'cropping system': tabBtns[i].addEventListener('click', () => click_tab('cropping')); break
+      case 'climate': tabBtns[i].addEventListener('click', () => click_tab('climate')); break
+      case 'climate risk': tabBtns[i].addEventListener('click', () => click_tab('risk')); break
+      case 'climate impacts': tabBtns[i].addEventListener('click', () => click_tab('impacts')); break
+      case 'practices': tabBtns[i].addEventListener('click', () => click_tab('practices')); break
+      case 'enablers': tabBtns[i].addEventListener('click', () => click_tab('enablers')); break
+      default: break
+      }
+    }
+  }
+
+  $('#climate_tab a').on('click', function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    climate_load()
+  })
 })
 
-$('#climate_tab a').on('click', function (e) {
-  e.preventDefault()
-  $(this).tab('show')
-})
-
-$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-  climate_load()
-})
 // Parameters
 let tab = 'intro'
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
