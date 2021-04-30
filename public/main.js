@@ -1,10 +1,31 @@
+// Base Data URL
+const baseDataURL = window.location.pathname
+
+// --- Data Store ---
+
+// map data
+let mapData
+let mapJSON
+let mapLayer
+const maplayers = {
+  district: { type: 'FeatureCollection', features: [] },
+  province: { type: 'FeatureCollection', features: [] },
+  national: { type: 'FeatureCollection', features: [] }
+}
+const mapLayerGroup = L.layerGroup([])
+// enablers data
+let enablersNational
+let enablersProvince
+let enablersDistricts
+let allProvinces
+let allDistricts
+
 // Global function
-jQuery(document).ready(function () {
+jQuery(document).ready(async function () {
   $('[data-toggle="tooltip"]').tooltip()
 
   // Set tab click event listeners
   const tabBtns = Object.values($('ul.navbar-nav').children('li').children('a'))
-
   for (let i = 0; i < tabBtns.length; i += 1) {
     if (tabBtns[i].innerText) {
       text = tabBtns[i].innerText.trim().toLowerCase()
@@ -31,6 +52,22 @@ jQuery(document).ready(function () {
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     climate_load()
   })
+
+  // Set Site selection tab aggregation btn listeners
+  $('#site_district').click(function (e) {
+    siteMapAgg = 'district'
+    selectSiteLevel()
+  })
+
+  $('#site_province').click(function (e) {
+    siteMapAgg = 'province'
+    selectSiteLevel()
+  })
+
+  $('#site_national').click(function (e) {
+    siteMapAgg = 'national'
+    selectSiteLevel()
+  })
 })
 
 // Parameters
@@ -47,7 +84,7 @@ let practices_d = []
 let climate_indicator_d = []
 let climate_indicator_province = ''
 let climate_indicator_district = ''
-let climate_indicator_let = ''
+const climate_indicator_var = ''
 let climate_indicator_coords = []
 let crop_c_full = []
 let hazard_c_full = []
@@ -55,10 +92,7 @@ tab = ''
 // Controls
 let map_i
 let map
-// Base Data URL
-const baseDataURL = window.location.pathname
-// Map Data
-let mapData
+let siteMapAgg = 'district'
 
 /**
  * This function change the type of information and functionalities of the web page depending of the value
@@ -78,6 +112,7 @@ async function click_tab (tab_selected) {
     $('#title').html('Site selection')
     $('#description').html('Please use the below map to select the region (National, Province, District) you would like to focus on. You can also see in the project site tab a list of all districts and villages included in the study.')
     $('#site').removeClass('d-none')
+    site_fill()
   } else if (tab === 'cropping') {
     $('#title').html('Cropping system')
     $('#description').html('In this tab you will find cropping and livestock data for each of the districts included in the study, based on the most recent provincial crop reporting data. Then for each of the villages in the province for which a CSV plan was prepared, you will find the cropping and hazard calendar constructed through village level consultations.')
@@ -216,21 +251,52 @@ async function click_tab (tab_selected) {
   }
 
   map = L.map('map').setView([29.8724623, 66.1822339], 5)
+  mapLayerGroup.addTo(map)
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map)
 
-  const layer_url = `${baseDataURL}data/maps/pakistan_map.json`
-
   if (!mapData) {
     mapData = await loadMapData()
     console.log('---map data loaded!')
+
+    // Pre-load enablers data to use its province and district names list as reference for site selection
+    try {
+      enablersProvince = await loadD3CSVData('/enablers/enablers_prov.csv')
+    } catch (err) {
+      console.log(err.message)
+    }
+
+    try {
+      enablersDistricts = await loadD3CSVData('/enablers/enablers_dist.csv')
+    } catch (err) {
+      console.log(err.message)
+    }
+
+    try {
+      enablersNational = await loadD3CSVData('/enablers/enablers_nati.csv')
+    } catch (err) {
+      console.log(err.message)
+    }
+
+    // Get all province and district names
+    allProvinces = [...new Set(enablersDistricts.map(x => x.province))]
+    allDistricts = [...new Set(enablersDistricts.map(x => x.district))]
+
+    // Rename "Sindh" from enablers province to "Sind", which the site map uses (?)
+    allProvinces[allProvinces.indexOf('Sindh')] = 'Sind'
+
+    try {
+      // Load map JSON
+      const layer_url = `${baseDataURL}data/maps/pakistan_map.json`
+      mapJSON = await $.getJSON(layer_url)
+    } catch (err) {
+      console.log(err.message)
+    }
   }
 
-  $.getJSON(layer_url, function (data) {
-    L.geoJSON(data, { onEachFeature: onEachFeature }).addTo(map)
-  })
+  reloadMapLayer()
 }
 
 /**
@@ -379,6 +445,27 @@ function climate_load () {
       })
     })
   })
+}
+
+/**
+ * Function which displays the list of all provinces and villages on the site selection sub-tab
+ */
+function site_fill () {
+  let provinces = ''
+  for (let i = 0; i < allProvinces.length; i += 1) {
+    let table = '<table class="table table-bordered table-sm">'
+    let row = `<tr><th>${allProvinces[i]}</th></tr>`
+
+    const districts = mapJSON.features.filter(x => x.properties.NAME_1 === allProvinces[i] && allDistricts.includes(x.properties.NAME_3)).map(x => x.properties.NAME_3)
+    for (let j = 0; j < districts.length; j += 1) {
+      row += `<tr><td>${districts[j]}</td></tr>`
+    }
+
+    table += `${row}</table>`
+    provinces += table
+  }
+
+  $('#site_provinces').html(provinces)
 }
 
 /**
@@ -813,17 +900,22 @@ function risk_fill (data) {
 }
 
 function enablers_load () {
+  let data
   type_agg = $('#cbo_enablers_agg').val()
-  d3.csv(`${baseDataURL}data/enablers/enablers_${type_agg}.csv`, function (error, data) {
-    if (error) { console.log(error) }
-    let enablers = null
-    if (type_agg === 'dist') { enablers = data.filter(function (item) { return item.district === district }) } else if (type_agg === 'prov') { enablers = data.filter(function (item) { return item.province === province }) } else { enablers = data }
-    console.log(enablers)
-    enablers = enablers.sort((a, b) => d3.descending(parseFloat(a.rank), parseFloat(b.rank)))
-    // enablers = data;
-    // Default fill
-    enablers_fill(enablers)
-  })
+
+  switch (type_agg) {
+  case 'dist': data = enablersDistricts; break
+  case 'prov': data = enablersProvince; break
+  default: data = enablersNational; break
+  }
+
+  let enablers = null
+  if (type_agg === 'dist') { enablers = data.filter(function (item) { return item.district === district }) } else if (type_agg === 'prov') { enablers = data.filter(function (item) { return item.province === province }) } else { enablers = data }
+  console.log(enablers)
+  enablers = enablers.sort((a, b) => d3.descending(parseFloat(a.rank), parseFloat(b.rank)))
+  // enablers = data;
+  // Default fill
+  enablers_fill(enablers)
 }
 /**
  * Function which fill table of enablers
@@ -857,10 +949,24 @@ function onEachFeature (feature, layer) {
     weight: 0.5
   })
 
+  if (layer.feature.geometry.coordinates && districtTemp[0].site === '1' && siteMapAgg === 'district') {
+    // const text = `Province: ${layer.feature.properties.NAME_1}<br>NAME_2: ${layer.feature.properties.NAME_2}<br>District: ${layer.feature.properties.NAME_3}`
+    let text = layer.feature.properties.NAME_3
+    switch (siteMapAgg) {
+    case 'district': text = layer.feature.properties.NAME_3; break
+    case 'province': text = layer.feature.properties.NAME_1; break
+    case 'national': text = 'Pakistan'; break
+    default: break
+    }
+    layer.bindTooltip(text, { permanent: true })
+  }
+
   layer.on('click', function (e) {
+    console.log(layer.feature.properties)
     province = layer.feature.properties.NAME_1
     district = layer.feature.properties.NAME_3
     coords = layer.feature.geometry.coordinates[0][0]
+    console.log(`---PROVINCE: ${province}\n---DISTRICT: ${district}\n---COORDS: ${coords}`)
 
     $('#txt_site_selected').html(province + ' - ' + district)
   })
@@ -877,6 +983,66 @@ const loadMapData = () => new Promise((resolve, reject) => {
     }
   })
 })
+/**
+ * Function to load CSV data using D3
+ */
+const loadD3CSVData = (path) => new Promise((resolve, reject) => {
+  d3.csv(`${baseDataURL}data/${path}`, function (error, data) {
+    if (error) {
+      reject(error)
+    } else {
+      resolve(data)
+    }
+  })
+})
+/**
+ * Function to reload the map's current (or new) JSON layer and display new tooltip values
+ */
+const reloadMapLayer = (layer) => {
+  mapLayerGroup.clearLayers()
+  mapLayerGroup.addLayer(L.geoJSON(layer ?? mapJSON, { onEachFeature: onEachFeature }))
+}
+/**
+ * Function that displays the province or national labels on the center, in the case of multipolygons
+ */
+const selectSiteLevel = (level) => {
+  reloadMapLayer()
+
+  if (level ?? siteMapAgg === 'national') {
+    mapLayerGroup.addLayer(
+      L.marker(L.geoJSON(mapJSON).getBounds().getCenter(), {
+        icon: L.divIcon({
+          iconSize: null,
+          html: '<div class="map-label"><div class="map-label-content">Pakistan</div><div class="map-label-arrow"></div></div>'
+        })
+      })
+    )
+  } else if (level ?? siteMapAgg === 'province') {
+    if (!mapJSON) {
+      return
+    }
+
+    for (let i = 0; i < allProvinces.length; i += 1) {
+      console.log(`---processing province ${allProvinces[i]}`)
+      const provinceLayer = {
+        type: 'FeatureCollection',
+        features: mapJSON.features.filter(x => x.properties.NAME_1 === allProvinces[i])
+      }
+
+      mapLayerGroup.addLayer(
+        L.marker(L.geoJSON(provinceLayer).getBounds().getCenter(), {
+          icon: L.divIcon({
+            iconSize: null,
+            html: `<div class="map-label"><div class="map-label-content">${allProvinces[i]}</div><div class="map-label-arrow"></div></div>`
+          })
+        })
+      )
+
+      console.log(provinceLayer)
+      maplayers.province.features = [...maplayers.province.features, ...provinceLayer.features]
+    }
+  }
+}
 
 // Default tab
 click_tab('intro')
