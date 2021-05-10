@@ -779,7 +779,7 @@ function impact_fill_table (crop, hazard) {
   let count = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
   count = d3.map(count, function (d) { return d.count }).keys()
   */
-  let data = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
+  const data = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
   const severity = d3.map(data, function (d) { return d.severity })
   const count = d3.map(data, function (d) { return d.count })
   const _severity = severity.keys()
@@ -792,7 +792,7 @@ function impact_fill_table (crop, hazard) {
       console.log(`---MULTIPLE COUNT, adding ${acc[item.severity]} + ${item.severity}, ${item.district} - ${item.count}`)
       acc[item.severity] += parseInt(item.count)
     }
-    return {...acc}
+    return { ...acc }
   }, {})
 
   // Fixing groups and Removing duplicates
@@ -832,8 +832,8 @@ function impact_fill_table (crop, hazard) {
   if (_severity.length > 0) {
     table = '<table class="table table-striped table-sm">'
     for (let i = 0; i < _severity.length; i++) {
-      table = table + '<tr><th>Severity</th><td>' + _severity[i] + '</td><th>Count</th><td>' + aggCount[_severity[i]]
-       + '</td></tr>'
+      table = table + '<tr><th>Severity</th><td>' + _severity[i] + '</td><th>Count</th><td>' + aggCount[_severity[i]] +
+       '</td></tr>'
     }
     table = table + '</table>'
     $('#impacts_severity').html(table)
