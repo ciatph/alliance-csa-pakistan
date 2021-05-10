@@ -20,6 +20,9 @@ let enablersDistricts
 let allProvinces
 let allDistricts
 
+// impacts data
+let impactsData
+
 // Global function
 jQuery(document).ready(async function () {
   $('[data-toggle="tooltip"]').tooltip()
@@ -67,6 +70,11 @@ jQuery(document).ready(async function () {
   $('#site_national').click(function (e) {
     siteMapAgg = 'national'
     selectSiteLevel()
+  })
+
+  // Sub tab - Climate Impacts aggregation dropdown menu
+  $('#cbo_impact_agg').on('change', function (e) {
+    renderClimateImpacts(e.target.value)
   })
 })
 
@@ -158,39 +166,8 @@ async function click_tab (tab_selected) {
     $('#title').html('Climate impacts')
     $('#description').html('This tab presents the results of the climate impact analysis where value chain experts in each of the districts identified the impacts of certain hazards on key commodity value chains for the district. The impacts are ordered with those that were selected the most frequently at the top. It is possible to further filter the impacts looking at specific hazards of commodity value chains.')
     $('#impacts').removeClass('d-none')
-    d3.csv(`${baseDataURL}data/impacts/impacts.csv`, function (error, data) {
-      if (error) { console.log(error) }
-      hazard_d = data.filter(function (item) { return item.district === district })
-      // Filling the cbo controls with hazard and crops
-      const crops_livestock = d3.map(hazard_d, function (d) { return d.crop_livestock }).keys()
-      const cbo_impact_crop = $('#cbo_impact_crop')
-      cbo_impact_crop.empty()
-      $.each(crops_livestock, function () {
-        cbo_impact_crop.append($('<option />').val(this).text(this))
-      })
-      cbo_impact_crop.append($('<option />').val('All').text('All'))
-      cbo_impact_crop.val('All')
-
-      const hazard = d3.map(hazard_d, function (d) { return d.hazard }).keys()
-      const cbo_impact_hazard = $('#cbo_impact_hazard')
-      cbo_impact_hazard.empty()
-      $.each(hazard, function () {
-        cbo_impact_hazard.append($('<option />').val(this).text(this))
-      })
-      cbo_impact_hazard.append($('<option />').val('All').text('All'))
-      cbo_impact_hazard.val('All')
-
-      // Set the event change for both controls
-      cbo_impact_crop.on('change', function (e) {
-        impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val())
-      })
-      cbo_impact_hazard.on('change', function (e) {
-        impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val())
-      })
-
-      // Default fill
-      impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val())
-    })
+    $('#cbo_impact_agg').val('dist')
+    renderClimateImpacts()
   } else if (tab === 'risk') {
     $('#title').html('Climate risk')
     $('#description').html('This tab presents a risk matrix generated through responses from agricultural experts in the districts on the frequency and severity of major hazards.')
@@ -788,10 +765,21 @@ function impact_fill_table (crop, hazard) {
   let on_farm = hazard_d.filter(function (item) { return item.vc_stage === '2. On-farm' && (crop === 'All' ? true : item.crop_livestock === crop) && (hazard === 'All' ? true : item.hazard === hazard) }).sort((a, b) => d3.descending(parseFloat(a.freq), parseFloat(b.freq)))
   let harvesting = hazard_d.filter(function (item) { return item.vc_stage === '3. Harvesting, storage & processing' && (crop === 'All' ? true : item.crop_livestock === crop) && (hazard === 'All' ? true : item.hazard === hazard) }).sort((a, b) => d3.descending(parseFloat(a.freq), parseFloat(b.freq)))
   let marketing = hazard_d.filter(function (item) { return item.vc_stage === '4. Marketing' && (crop === 'All' ? true : item.crop_livestock === crop) && (hazard === 'All' ? true : item.hazard === hazard) }).sort((a, b) => d3.descending(parseFloat(a.freq), parseFloat(b.freq)))
+
+  // 'count' Does not match 'severity' ordering on province aggregation level, if there are more than (1) entry
+  /*
   let severity = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
   severity = d3.map(severity, function (d) { return d.severity }).keys()
   let count = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
   count = d3.map(count, function (d) { return d.count }).keys()
+  */
+
+  let severity = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
+  severity = d3.map(severity, function (d) { return d.severity })
+  const _severity = severity.keys()
+  const _count = severity.values()
+
+  console.log(`-inputs: ${inputs.length}\n-on_farm: ${on_farm.length}\n-harvesting: ${harvesting.length}\n-marketing: ${marketing.length}`)
 
   // Fixing groups and Removing duplicates
   // console.log(inputs);
@@ -827,10 +815,10 @@ function impact_fill_table (crop, hazard) {
   $('#impacts_table  > tbody').html(table)
 
   // Sverity
-  if (severity.length > 0) {
+  if (_severity.length > 0) {
     table = '<table class="table table-striped table-sm">'
-    for (let i = 0; i < severity.length; i++) {
-      table = table + '<tr><th>Severity</th><td>' + severity[i] + '</td><th>Count</th><td>' + count[i] + '</td></tr>'
+    for (let i = 0; i < _severity.length; i++) {
+      table = table + '<tr><th>Severity</th><td>' + _severity[i] + '</td><th>Count</th><td>' + _count[i].count + '</td></tr>'
     }
     table = table + '</table>'
     $('#impacts_severity').html(table)
@@ -911,7 +899,6 @@ function enablers_load () {
 
   let enablers = null
   if (type_agg === 'dist') { enablers = data.filter(function (item) { return item.district === district }) } else if (type_agg === 'prov') { enablers = data.filter(function (item) { return item.province === province }) } else { enablers = data }
-  console.log(enablers)
   enablers = enablers.sort((a, b) => d3.descending(parseFloat(a.rank), parseFloat(b.rank)))
   // enablers = data;
   // Default fill
@@ -949,6 +936,7 @@ function onEachFeature (feature, layer) {
     weight: 0.5
   })
 
+  /* Display the district tooltip labels
   if (layer.feature.geometry.coordinates && districtTemp[0].site === '1' && siteMapAgg === 'district') {
     // const text = `Province: ${layer.feature.properties.NAME_1}<br>NAME_2: ${layer.feature.properties.NAME_2}<br>District: ${layer.feature.properties.NAME_3}`
     let text = layer.feature.properties.NAME_3
@@ -960,6 +948,7 @@ function onEachFeature (feature, layer) {
     }
     layer.bindTooltip(text, { permanent: true })
   }
+  */
 
   layer.on('click', function (e) {
     console.log(layer.feature.properties)
@@ -1023,7 +1012,6 @@ const selectSiteLevel = (level) => {
     }
 
     for (let i = 0; i < allProvinces.length; i += 1) {
-      console.log(`---processing province ${allProvinces[i]}`)
       const provinceLayer = {
         type: 'FeatureCollection',
         features: mapJSON.features.filter(x => x.properties.NAME_1 === allProvinces[i])
@@ -1042,6 +1030,83 @@ const selectSiteLevel = (level) => {
       maplayers.province.features = [...maplayers.province.features, ...provinceLayer.features]
     }
   }
+}
+/**
+ * Function to re-render the climate impacts data based on selected aggregation.
+ */
+async function renderClimateImpacts (level = 'dist') {
+  // District selected from the Site Selection tab, along with 'province'
+  if (!district) {
+    return
+  }
+
+  // Load impacts data
+  if (!impactsData) {
+    impactsData = await loadD3CSVData('/impacts/impacts.csv')
+  }
+
+  // Set aggregation level
+  let aggLevel = 'district'
+  let aggValue = district
+
+  switch (level) {
+  case 'dist':
+    // set the aggregation value to the selected district name
+    aggLevel = 'district'
+    aggValue = district
+    break
+  case 'prov':
+    // set the aggregation value to the selected province name
+    aggLevel = 'province'
+    aggValue = province
+    break
+  case 'nati':
+    aggLevel = null
+    aggValue = null
+    break
+  default: break
+  }
+
+  // Filter by province or district
+  if (aggLevel && aggValue) {
+    hazard_d = impactsData.filter(function (item) { return item[aggLevel] === aggValue })
+  } else {
+    // No filters for 'national'
+    hazard_d = impactsData
+  }
+
+  // Filling the cbo controls with hazard and crops
+  const crops_livestock = d3.map(hazard_d, function (d) { return d.crop_livestock }).keys()
+  const cbo_impact_crop = $('#cbo_impact_crop')
+  cbo_impact_crop.empty()
+  $.each(crops_livestock, function () {
+    cbo_impact_crop.append($('<option />').val(this).text(this))
+  })
+  cbo_impact_crop.append($('<option />').val('All').text('All'))
+  cbo_impact_crop.val('All')
+
+  const hazard = d3.map(hazard_d, function (d) { return d.hazard }).keys()
+  const cbo_impact_hazard = $('#cbo_impact_hazard')
+  cbo_impact_hazard.empty()
+  $.each(hazard, function () {
+    cbo_impact_hazard.append($('<option />').val(this).text(this))
+  })
+  cbo_impact_hazard.append($('<option />').val('All').text('All'))
+  cbo_impact_hazard.val('All')
+
+  console.log(`selecting ${aggLevel} == ${aggValue}`)
+  console.log(`data: ${hazard_d.length}\nlivestock: ${crops_livestock.length}\nhazards: ${hazard.length}`)
+
+  // Set the event change for both controls
+  cbo_impact_crop.on('change', function (e) {
+    impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val())
+  })
+  cbo_impact_hazard.on('change', function (e) {
+    impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val())
+  })
+
+  // Default fill
+  impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val())
 }
 
 // Default tab
