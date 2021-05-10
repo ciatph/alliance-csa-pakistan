@@ -167,6 +167,12 @@ async function click_tab (tab_selected) {
     $('#description').html('This tab presents the results of the climate impact analysis where value chain experts in each of the districts identified the impacts of certain hazards on key commodity value chains for the district. The impacts are ordered with those that were selected the most frequently at the top. It is possible to further filter the impacts looking at specific hazards of commodity value chains.')
     $('#impacts').removeClass('d-none')
     $('#cbo_impact_agg').val('dist')
+
+    // Load the impacts data
+    if (!impactsData) {
+      impactsData = await loadD3CSVData('/impacts/impacts.csv')
+    }
+
     renderClimateImpacts()
   } else if (tab === 'risk') {
     $('#title').html('Climate risk')
@@ -773,13 +779,21 @@ function impact_fill_table (crop, hazard) {
   let count = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
   count = d3.map(count, function (d) { return d.count }).keys()
   */
-
-  let severity = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
-  severity = d3.map(severity, function (d) { return d.severity })
+  let data = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
+  const severity = d3.map(data, function (d) { return d.severity })
+  const count = d3.map(data, function (d) { return d.count })
   const _severity = severity.keys()
-  const _count = severity.values()
 
-  console.log(`-inputs: ${inputs.length}\n-on_farm: ${on_farm.length}\n-harvesting: ${harvesting.length}\n-marketing: ${marketing.length}`)
+  // Sum multiple counts, if amy
+  const aggCount = count.values().reduce((acc, item) => {
+    if (!acc[item.severity]) {
+      acc[item.severity] = parseInt(item.count)
+    } else {
+      console.log(`---MULTIPLE COUNT, adding ${acc[item.severity]} + ${item.severity}, ${item.district} - ${item.count}`)
+      acc[item.severity] += parseInt(item.count)
+    }
+    return {...acc}
+  }, {})
 
   // Fixing groups and Removing duplicates
   // console.log(inputs);
@@ -818,7 +832,8 @@ function impact_fill_table (crop, hazard) {
   if (_severity.length > 0) {
     table = '<table class="table table-striped table-sm">'
     for (let i = 0; i < _severity.length; i++) {
-      table = table + '<tr><th>Severity</th><td>' + _severity[i] + '</td><th>Count</th><td>' + _count[i].count + '</td></tr>'
+      table = table + '<tr><th>Severity</th><td>' + _severity[i] + '</td><th>Count</th><td>' + aggCount[_severity[i]]
+       + '</td></tr>'
     }
     table = table + '</table>'
     $('#impacts_severity').html(table)
@@ -936,19 +951,11 @@ function onEachFeature (feature, layer) {
     weight: 0.5
   })
 
-  /* Display the district tooltip labels
+  // Display the district tooltip labels
   if (layer.feature.geometry.coordinates && districtTemp[0].site === '1' && siteMapAgg === 'district') {
-    // const text = `Province: ${layer.feature.properties.NAME_1}<br>NAME_2: ${layer.feature.properties.NAME_2}<br>District: ${layer.feature.properties.NAME_3}`
-    let text = layer.feature.properties.NAME_3
-    switch (siteMapAgg) {
-    case 'district': text = layer.feature.properties.NAME_3; break
-    case 'province': text = layer.feature.properties.NAME_1; break
-    case 'national': text = 'Pakistan'; break
-    default: break
-    }
-    layer.bindTooltip(text, { permanent: true })
+    const text = `Province: ${layer.feature.properties.NAME_1}<br>District: ${layer.feature.properties.NAME_3}`
+    layer.bindPopup(text)
   }
-  */
 
   layer.on('click', function (e) {
     console.log(layer.feature.properties)
@@ -1040,11 +1047,6 @@ async function renderClimateImpacts (level = 'dist') {
     return
   }
 
-  // Load impacts data
-  if (!impactsData) {
-    impactsData = await loadD3CSVData('/impacts/impacts.csv')
-  }
-
   // Set aggregation level
   let aggLevel = 'district'
   let aggValue = district
@@ -1079,6 +1081,7 @@ async function renderClimateImpacts (level = 'dist') {
   const crops_livestock = d3.map(hazard_d, function (d) { return d.crop_livestock }).keys()
   const cbo_impact_crop = $('#cbo_impact_crop')
   cbo_impact_crop.empty()
+  cbo_impact_crop.off('change')
   $.each(crops_livestock, function () {
     cbo_impact_crop.append($('<option />').val(this).text(this))
   })
@@ -1088,6 +1091,7 @@ async function renderClimateImpacts (level = 'dist') {
   const hazard = d3.map(hazard_d, function (d) { return d.hazard }).keys()
   const cbo_impact_hazard = $('#cbo_impact_hazard')
   cbo_impact_hazard.empty()
+  cbo_impact_hazard.off('change')
   $.each(hazard, function () {
     cbo_impact_hazard.append($('<option />').val(this).text(this))
   })
