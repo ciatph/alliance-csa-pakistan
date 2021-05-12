@@ -166,7 +166,22 @@ async function click_tab (tab_selected) {
     $('#title').html('Climate impacts')
     $('#description').html('This tab presents the results of the climate impact analysis where value chain experts in each of the districts identified the impacts of certain hazards on key commodity value chains for the district. The impacts are ordered with those that were selected the most frequently at the top. It is possible to further filter the impacts looking at specific hazards of commodity value chains.')
     $('#impacts').removeClass('d-none')
-    $('#cbo_impact_agg').val('dist')
+
+    // Display the selected district and province names
+    if (district && province) {
+      const options = {
+        dist: `District - ${province ?? ''}`,
+        prov: `Province - ${district ?? ''}`,
+        nati: `National - ${district ? 'Pakistan' : ''}`
+      }
+
+      const select = $('#cbo_impact_agg')
+      select.empty()
+      $.each(Object.keys(options), function () {
+        select.append($('<option />').val(this).text(options[this]))
+      })
+      select.val('dist')
+    }
 
     // Load the impacts data
     if (!impactsData) {
@@ -1069,7 +1084,7 @@ async function renderClimateImpacts (level = 'dist') {
   default: break
   }
 
-  // Filter by province or district
+  // Filter data by province or district
   if (aggLevel && aggValue) {
     hazard_d = impactsData.filter(function (item) { return item[aggLevel] === aggValue })
   } else {
