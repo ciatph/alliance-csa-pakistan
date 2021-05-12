@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+        crossorigin="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+        integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+    <!-- Site CSS -->
+    <link href="/vendor/gijgo_1.9.13/gijgo.min.css" rel="stylesheet" type="text/css" />  
+    <link rel="stylesheet" href="main.css" rel="stylesheet" type="text/css">
+
+    <title>Pakistan - Test Site</title>
+</head>
+
+<body class="d-flex flex-column h-100">
+    <header>
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" href="#">Pakistan</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-book"></i>
+                            Intro
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-globe-asia"></i>
+                            Site selection
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fab fa-envira"></i>
+                            Cropping system
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-cloud-sun-rain"></i>
+                            Climate
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-biohazard"></i>
+                            Climate risk
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-bolt"></i>
+                            Climate impacts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-child"></i>
+                            Practices
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-code-branch"></i>
+                            Enablers
+                        </a>
+                    </li>
+                </ul>
+                <form class="d-flex">
+                    <h2 class="navbar-brand">Location: <strong><span id="txt_site_selected"></span></strong></h2>
+                </form>
+            </div>
+        </nav>
+    </header>
+
+
+    <main role="main" class="flex-shrink-0">
+        <div class="container">
+            <!-- Start Intro -->
+            <div id="intro" style="margin-top: 70px;" class="tab_layout">
+                <div class="row">
+                    <div class="row row-cols-1 row-cols-sm-2 g-2">
+                        <div class="col">
+                            <div class="card shadow-sm">
+                                <img src="https://ciat-dapa.github.io/pakistan_web/img/logos/l_fao.png" width="100%"
+                                    height="225px" role="img" class="img-fluid" alt="FAO" />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card shadow-sm">
+                                <img src="https://ciat-dapa.github.io/pakistan_web/img/logos/l_alliance.png" width="100%"
+                                    height="225px" role="img" class="img-fluid"
+                                    alt="Alliance Bioversity International - CIAT" />
+                            </div>
+                        </div>                        
+                    </div>
+                </div>
+                <h2>About the project</h2>
+                <p class="text-justify">
+                    The data presented in this dashboard is the output of a series of workshops and online consultations
+                    conducted as part of a Food and Agriculture Organisation of the United Nations (FAO) led, and
+                    Alliance of Bioversity International & CIAT designed project on Climate-Smart Agriculture in
+                    Pakistan.
+                    The project developed a series of District Climate Risk Profiles (DCRP's) and Climate Smart Village
+                    (CSV) plans,
+                    covering 13 districts and 43 villages from across Punjab, Sindh, and Khyber Pakhtunkhwa. The
+                    implementation
+                    of the project was supported by national partners in each of the three provinces, namely the Pir
+                    Mehar Ali Shah (PMAS)
+                    Arid Agriculture University Rawalpindi; the University of Agriculture Peshawar; and the Directorate
+                    Training and
+                    Research for Agriculture Engineering and Water management Sindh.
+                </p>
+                <p class="text-justify">
+                    This dashboard acts as a centralised data store and visualisation tool for decision makers,
+                    researchers
+                    and agricultural practitioners to quickly access and review information gathered through this study,
+                    based on consultations with over 1,000 agricultural experts and farmers from across the three
+                    provinces.
+                    We see this as an important tool in helping decision makers get a quick snap shot of the major
+                    hazards,
+                    their impacts, and recommended response strategies, supporting future policy and programming around
+                    CSA
+                    in Pakistan.
+                </p>
+                <p class="text-justify">
+                    The authors of this study are extremely grateful for the contribution of all of those who took part
+                    in the
+                    study and helped to shed light on the importance of CSA in supporting Pakistan's agriculture sector.
+                </p>
+                <h3>How to use the dashboard</h3>
+                <p class="text-justify">
+                    <b>Site selection</b> - The first step in navigating through the dashboard is to select the region
+                    you would like to look at.
+                    This will allow you to either look at Pakistan as a whole, each of the three provinces or a single
+                    district.
+                    It is worth noting that depending on the type of information you are looking for some will be
+                    available
+                    aggregated at national or provincial levels, others will be available only at district or village
+                    level.
+                </p>
+                <p class="text-justify">
+                    <b>Cropping systems</b> - This tab displays district level data on production area and volume for
+                    the major crops,
+                    along with the livestock headcount. It also shows the cropping calendar and hazard calendar for the
+                    villages
+                    from that district covered in the study.
+                </p>
+                <p class="text-justify">
+                    <b>Climate</b> - The climate tab presents the results of a number of modelling exercises conducted
+                    by the
+                    Alliance of Bioversity International and CIAT's modelling team. This includes climatology data on
+                    monthly mean
+                    precipitation, minimum and maximum temperatures, modelling of future annual mean temperatures and
+                    precipitation
+                    using an ensemble of Global Circulation Models (GCM's), and the historic and future time series of a
+                    number of
+                    climatic indicators that impact agricultural production.
+                </p>
+                <p class="text-justify">
+                    <b>Climate risk</b> - This tab presents a risk matrix generated through responses from agricultural
+                    experts
+                    in the districts on the frequency and severity of major hazards.
+                </p>
+                <p class="text-justify">
+                    <b>Climate Impacts</b> - This tab presents the results of the climate impact analysis where value
+                    chain experts
+                    in each of the districts identified the impacts of certain hazards on key commodity value chains for
+                    the district.
+                </p>
+                <p class="text-justify">
+                    <b>Practices</b> - Presents the types of CSA practices prioritised by experts in the district, along
+                    with the
+                    areas were they have an impact, the hazards they address, and the barriers to adoption.
+                </p>
+                <p class="text-justify">
+                    <b>Enablers</b> - CSA enablers provide essential services and build core capacities, empowering
+                    individuals
+                    and agrarian communities to better manage their response to climate related pressures. This section
+                    looks at which types of enabler are prioritised in each of the districts.
+                </p>
+            </div>
+            <!-- End Intro-->
+
+            <!-- Start General -->
+            <div id="general">
+                <h1 id="title" class="mt-5 text-center"></h1>
+                <p id="description" class="text-justify"></p>
+            </div>
+            <!-- End General -->
+
+            <!-- Start Site -->
+            <div id="site" class="tab_layout">
+                <nav class="nav nav-tabs nav-justified" role="tablist" id="climate_tab">
+                    <a class="nav-item nav-link active" id="site_map_tab" data-toggle="site_tab"
+                        href="#site_map_content" role="tab" aria-controls="site_map_content"
+                        aria-selected="true">Map</a>
+                    <a class="nav-item nav-link" id="site_map_names_tab" data-toggle="site_tab" href="#site_map_names_content" role="tab"
+                        aria-controls="site_map_names_content" aria-selected="false">Provinces and Districts List</a>
+                </nav>
+                <div class="tab-content" id="site_content">
+                    <div class="tab-pane fade show active" id="site_map_content" role="tabpanel"
+                        aria-labelledby="site_map_tab">
+                        <div id="map" style="height: 500px; width: 100%;"></div>
+                        <div class="btn-group btn-group-toggle aggregation_select" data-toggle="buttons">
+                            <label class="btn btn-secondary active">
+                                <input type="radio" name="options" id="site_district" autocomplete="off" checked> Districts
+                            </label>
+                            <label class="btn btn-secondary">
+                                <input type="radio" name="options" id="site_province" autocomplete="off"> Province
+                            </label>
+                            <label class="btn btn-secondary">
+                                <input type="radio" name="options" id="site_national" autocomplete="off"> National
+                            </label>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="site_map_names_content" role="tabpanel" aria-labelledby="site_map_names_tab">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div id="site_provinces">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Site -->
+
+            <!-- Start Cropping -->
+            <div id="cropping" class="tab_layout">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h2 id="cropping_title"></h2>
+                </div>
+                <h3>Production</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card mb-4 shadow-sm">
+                            <h4 class="text-center">Planted area</h4>
+                            <div id="cropping_planted_plot" class="cropping_pie">
+                                <svg></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-4 shadow-sm">
+                            <h4 class="text-center">Production</h4>
+                            <div id="cropping_production_plot" class="cropping_pie">
+                                <svg></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-4 shadow-sm">
+                            <h4 class="text-center">Livestock</h4>
+                            <div id="cropping_livestock_plot" class="cropping_pie">
+                                <svg></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div
+                            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+                            <h3>Village</h3>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <div class="btn-group mr-2">
+                                    <select id="cbo_village" class="form-control form-control-lg">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3>Cropping calendar</h3>
+                        <table class="table table-sm">
+                            <tr>
+                                <td class="crop_c_Breeding">&nbsp;</td>
+                                <td class="">Breeding</td>
+                                <td class="crop_c_Growing">&nbsp;</td>
+                                <td class="">Growing</td>
+                                <td class="crop_c_Harvesting">&nbsp;</td>
+                                <td class="">Harvesting</td>
+                                <td class="crop_c_Planting">&nbsp;</td>
+                                <td class="">Planting</td>
+                            </tr>
+                        </table>
+                        <table id="cropping_calendar_table" class="table table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Crop / Livestock</th>
+                                    <th>Jan</th>
+                                    <th>Feb</th>
+                                    <th>Mar</th>
+                                    <th>Apr</th>
+                                    <th>May</th>
+                                    <th>Jun</th>
+                                    <th>Jul</th>
+                                    <th>Aug</th>
+                                    <th>Sep</th>
+                                    <th>Oct</th>
+                                    <th>Nov</th>
+                                    <th>Dec</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3>Hazard calendar</h3>
+                        <table id="cropping_hazard_table" class="table table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Hazard</th>
+                                    <th>Jan</th>
+                                    <th>Feb</th>
+                                    <th>Mar</th>
+                                    <th>Apr</th>
+                                    <th>May</th>
+                                    <th>Jun</th>
+                                    <th>Jul</th>
+                                    <th>Aug</th>
+                                    <th>Sep</th>
+                                    <th>Oct</th>
+                                    <th>Nov</th>
+                                    <th>Dec</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- End Cropping -->
+
+            <!-- Start Climate -->
+            <div id="climate" class="tab_layout">
+                <nav class="nav nav-tabs nav-justified" role="tablist" id="climate_tab">
+                    <a class="nav-item nav-link active" id="cli_climatology_tab" data-toggle="tab"
+                        href="#cli_climatology_content" role="tab" aria-controls="cli_climatology_content"
+                        aria-selected="true">Climatology</a>
+                    <a class="nav-item nav-link" id="cli_gcm_tab" data-toggle="tab" href="#cli_gcm_content" role="tab"
+                        aria-controls="cli_gcm_content" aria-selected="false">GCM</a>
+                    <a class="nav-item nav-link" id="cli_indicators_tab" data-toggle="tab"
+                        href="#cli_indicators_content" role="tab" aria-controls="cli_indicators_content"
+                        aria-selected="false">Indicators</a>
+                </nav>
+                <div class="tab-content" id="climate_content">
+                    <div class="tab-pane fade show active" id="cli_climatology_content" role="tabpanel"
+                        aria-labelledby="cli_climatology_tab">
+                        <p class="text-justity">
+                            For the figure below historical data is used to measure monthly mean precipitation and
+                            maximum and minimum temperatures in the district.
+                        </p>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div id="climate_prec_plot" class="climatology_plot">
+                                    <svg></svg>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div id="climate_temp_plot" class="climatology_plot">
+                                    <svg></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="cli_gcm_content" role="tabpanel" aria-labelledby="cli_gcm_tab">
+                        <p class="text-justity">
+                            Future climate data in the form of projected annual mean temperatures and precipitation was
+                            modelled using the CMIP5 model ensemble.
+                        </p>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div id="gcm_prec_plot" class="climatology_plot">
+                                    <svg></svg>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div id="gcm_temp_plot" class="climatology_plot">
+                                    <svg></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="cli_indicators_content" role="tabpanel"
+                        aria-labelledby="cli_indicators_tab">
+                        <p class="text-justity">
+                            Given the sensitivity of crops to adverse climatic conditions modelling of future climatic
+                            conditions needs to be more targeted to the growth requirements of crops, going beyond
+                            yearly averages for temperatures and precipitation. To achieve this modelling was conducted
+                            that focused on a set of indicators critical for plant and animal health. The indicators
+                            used are described in the below table, with the analysis conducted for each of the Rabi and
+                            Kharif seasons:
+                        </p>
+                        <table id="cli_indicators_list" class="table  table-sm">
+                            <tr>
+                                <th>Acronym</th>
+                                <th>Description</th>
+                                <th>Hazard</th>
+                            </tr>
+                            <tr>
+                                <td>CDD</td>
+                                <td>Drought spell. Maximum number of consecutive dry days (precipitation < 1 mm
+                                        day-1).</td>
+                                <td>Drought: there is a long drought spell during the growing season which reduces
+                                    productivity or causes crop failure.</td>
+                            </tr>
+                            <tr>
+                                <td>NDWS</td>
+                                <td>Moisture stress. Number of days with ratio of actual to potential evapotranspiration
+                                    ratio below 0.5.</td>
+                                <td>Drought: crops experience wilting due to constantly low soil moisture levels during
+                                    the growing season.</td>
+                            </tr>
+                            <tr>
+                                <td>IRR</td>
+                                <td>Irrigation water requirement. Total amount of required irrigation water to satisfy
+                                    crop demand</td>
+                                <td>Water scarcity: greater water requirements puts greater pressure on aquifers and
+                                    rivers.</td>
+                            </tr>
+                            <tr>
+                                <td>P5D</td>
+                                <td>Flooding. Maximum 5-day running average precipitation.</td>
+                                <td>Flooding: too much rainfall during a week causes flooding, which causes crops to
+                                    wilt</td>
+                            </tr>
+                            <tr>
+                                <td>NT35</td>
+                                <td>Heat stress. Number of days with temperature above 35ºC.</td>
+                                <td>Heat stress: many hot days during the growing period slow crop growth, hinder grain
+                                    filling and can lead to low productivity.</td>
+                            </tr>
+                            <tr>
+                                <td>P95</td>
+                                <td>95th percentile of daily precipitation. Sows the level of precipitation recorded for
+                                    extreme events</td>
+                                <td>Flooding: Peak rainfall events increasing in intensity may result in flash flooding
+                                </td>
+                            </tr>
+                        </table>
+                        <div
+                            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+                            <h3>Indicators</h3>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <div class="btn-group mr-2">
+                                    <select id="cbo_climate_indicator" class="form-control form-control-lg">
+                                    </select>
+                                    <select id="cbo_climate_season" class="form-control form-control-lg">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div id="climate_indicator_plot" class="indicator_plot">
+                                    <svg></svg>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div id="climate_indicator_map" class="indicator_map">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Climate -->
+
+            <!-- Start CC Impacts -->
+            <div id="impacts" class="tab_layout">
+                <div class="container" style="border: 1px solid #cccccc; padding: 16px; border-radius: 8px;">
+                    <div class="row">
+                        <div class="col-sm">
+                            <label><strong>Geographic Filter</strong></label>
+                            <div id="tree" ></div>
+                        </div>
+                        <div class="col-sm">
+                            <label><strong>Commodity Filter</strong></label>
+                            <div id="cbo_impact_crop" ></div>
+                        </div>
+                        <div class="col-sm">
+                            <label><strong>Hazards Filter</strong></label>
+                            <div id="cbo_impact_hazard" ></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col" style="margin-top: 16px;">
+                            <hr />
+                            <input class="btn btn-primary" type="submit" value="Submit" style="float: right;">
+                            <input class="btn btn-light" type="submit" value="Clear" style="float: right; margin-right: 8px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 32px;">
+                    <div id="impacts_severity" class="col-md-12">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="impacts_table" class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>1. Input</th>
+                                <th>2. On-farm</th>
+                                <th>3. Harvesting, storage & processing</th>
+                                <th>4. Marketing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- End CC Impacts -->
+
+            <!-- Start Risk -->
+            <div id="risk" class="tab_layout">
+                <div class="table-responsive">
+                    <table id="risk_table" class="table  table-sm">
+                        <tr>
+                            <th>Severity / Frequency</th>
+                            <th>Minor severity (<10% losses)</th>
+                            <th>Moderate severity (10-30% losses)</th>
+                            <th>Major severity (30-50% losses)</th>
+                            <th>Severe severity (>50% losses)</th>
+                        </tr>
+                        <tr>
+                            <th>Every 10 years</th>
+                            <th id="r1-1" class="cell_green"></th>
+                            <th id="r1-2" class="cell_green"></th>
+                            <th id="r1-3" class="cell_yellow"></th>
+                            <th id="r1-4" class="cell_orange"></th>
+                        </tr>
+                        <tr>
+                            <th>Every 5 years</th>
+                            <th id="r2-1" class="cell_green"></th>
+                            <th id="r2-2" class="cell_yellow"></th>
+                            <th id="r2-3" class="cell_yellow"></th>
+                            <th id="r2-4" class="cell_orange"></th>
+                        </tr>
+                        <tr>
+                            <th>Every second year</th>
+                            <th id="r3-1" class="cell_yellow"></th>
+                            <th id="r3-2" class="cell_yellow"></th>
+                            <th id="r3-3" class="cell_orange"></th>
+                            <th id="r3-4" class="cell_red"></th>
+                        </tr>
+                        <tr>
+                            <th>Every year</th>
+                            <th id="r4-1" class="cell_orange"></th>
+                            <th id="r4-2" class="cell_orange"></th>
+                            <th id="r4-3" class="cell_red"></th>
+                            <th id="r4-4" class="cell_red"></th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <!-- End Risk -->
+
+            <!-- Start Practices -->
+            <div id="practices" class="tab_layout">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">                    
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group mr-2">
+                            <select id="cbo_practices_crop" class="form-control form-control-lg">
+                            </select>
+                            <select id="cbo_practices_hazard" class="form-control form-control-lg">
+                            </select>
+                            <!-- <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                                -->
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <div id="practices_table">
+
+                    </div>
+                </div>
+            </div>
+            <!-- End Practices -->
+
+            <!-- Start Enablers -->
+            <div id="enablers" class="tab_layout">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">                    
+                    <div class="btn-toolbar mb-12 mb-md-0">
+                        <div class="btn-group mr-2">
+                            <label class="form-inline">
+                                Select level of aggregation: 
+                                <select id="cbo_enablers_agg" class="form-control form-control-lg" onchange="enablers_load()">
+                                    <option value="dist">Districts</option>
+                                    <option value="prov">Province</option>
+                                    <option value="nati">National</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="enablers_table" class="table  table-sm">                        
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- End Enablers -->
+        </div>
+    </main>
+
+
+
+    <footer class="text-muted">
+        <div class="container">
+            <p>© 2020 Alliance Bioversity International - CIAT</p>
+        </div>
+    </footer>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"
+        integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+        integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+        crossorigin=""></script>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.js"></script>
+    <script src="https://d3js.org/d3-color.v2.min.js"></script>
+    <script src="https://d3js.org/d3-interpolate.v2.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v2.min.js"></script>
+
+    <!-- Site Script -->
+    <script src="/vendor/gijgo_1.9.13/gijgo.min.js" type="text/javascript"></script>
+    <script src="/js/geographicfilter.js" type="text/javascript"></script>
+    <script src="/js/simpleFilter.js" type="text/javascript"></script>
+    <script src="filters.js" type="text/javascript"></script>
+    
+</body>
+
+</html>
