@@ -779,7 +779,7 @@ function color_impact (value) {
 /**
  * Function which filter dataset for impacts and show data into the table
  */
-function impact_fill_table (crop, hazard) {
+function impact_fill_table (crop, hazard, aggLevel) {
   const filter_level = crop !== 'All' && hazard !== 'All'
   // Filtering data and order by frequency
   let inputs = hazard_d.filter(function (item) { return item.vc_stage === '1. Input' && (crop === 'All' ? true : item.crop_livestock === crop) && (hazard === 'All' ? true : item.hazard === hazard) }).sort((a, b) => d3.descending(parseFloat(a.freq), parseFloat(b.freq)))
@@ -794,6 +794,7 @@ function impact_fill_table (crop, hazard) {
   let count = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
   count = d3.map(count, function (d) { return d.count }).keys()
   */
+
   const data = hazard_d.filter(function (item) { return item.crop_livestock === crop && item.hazard === hazard })
   const severity = d3.map(data, function (d) { return d.severity })
   const count = d3.map(data, function (d) { return d.count })
@@ -809,6 +810,13 @@ function impact_fill_table (crop, hazard) {
     }
     return { ...acc }
   }, {})
+
+  // Get all districts included on provincial & nat'l filters
+  let dists = []
+  if (aggLevel !== 'dist') {
+    dists = data.map(x => x.district).filter((x, i, a) => a.indexOf(x) === i)
+    console.log(dists)
+  }
 
   // Fixing groups and Removing duplicates
   // console.log(inputs);
@@ -834,17 +842,18 @@ function impact_fill_table (crop, hazard) {
   let table = ''
   for (let i = 0; i < max; i++) {
     table = table + '<tr>'
-    table = table + (inputs.length > i ? '<td ' + (filter_level ? color_impact(inputs[i].values) : '') + '>' + inputs[i].key + '</td>' : '<td></td>')
-    table = table + (on_farm.length > i ? '<td ' + (filter_level ? color_impact(on_farm[i].values) : '') + '>' + on_farm[i].key + '</td>' : '<td></td>')
-    table = table + (harvesting.length > i ? '<td ' + (filter_level ? color_impact(harvesting[i].values) : '') + '>' + harvesting[i].key + '</td>' : '<td></td>')
-    table = table + (marketing.length > i ? '<td ' + (filter_level ? color_impact(marketing[i].values) : '') + '>' + marketing[i].key + '</td>' : '<td></td>')
+    table = table + (inputs.length > i ? '<td ' + (filter_level && aggLevel === 'dist' ? color_impact(inputs[i].values) : '') + '>' + inputs[i].key + '</td>' : '<td></td>')
+    table = table + (on_farm.length > i ? '<td ' + (filter_level && aggLevel === 'dist' ? color_impact(on_farm[i].values) : '') + '>' + on_farm[i].key + '</td>' : '<td></td>')
+    table = table + (harvesting.length > i ? '<td ' + (filter_level && aggLevel === 'dist' ? color_impact(harvesting[i].values) : '') + '>' + harvesting[i].key + '</td>' : '<td></td>')
+    table = table + (marketing.length > i ? '<td ' + (filter_level && aggLevel === 'dist' ? color_impact(marketing[i].values) : '') + '>' + marketing[i].key + '</td>' : '<td></td>')
     table = table + '</tr>'
   }
   // table = table + '</table>';
   $('#impacts_table  > tbody').html(table)
 
-  // Sverity
+  // Severity
   if (_severity.length > 0) {
+    // Severity table
     table = '<table class="table table-striped table-sm">'
     for (let i = 0; i < _severity.length; i++) {
       table = table + '<tr><th>Severity</th><td>' + _severity[i] + '</td><th>Count</th><td>' + aggCount[_severity[i]] +
@@ -852,8 +861,14 @@ function impact_fill_table (crop, hazard) {
     }
     table = table + '</table>'
     $('#impacts_severity').html(table)
+
+    // Show districts included on the provincial & nat'l levels
+    if (dists.length > 0) {
+      $('#impacts_severity_districts').html(`<strong>Districts:</strong><br>${dists.toString().split(',').join(', ')}`)
+    }
   } else {
     $('#impacts_severity').html('')
+    $('#impacts_severity_districts').html('')
   }
 }
 
@@ -1118,14 +1133,14 @@ async function renderClimateImpacts (level = 'dist') {
 
   // Set the event change for both controls
   cbo_impact_crop.on('change', function (e) {
-    impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val())
+    impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val(), level)
   })
   cbo_impact_hazard.on('change', function (e) {
-    impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val())
+    impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val(), level)
   })
 
   // Default fill
-  impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val())
+  impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val(), level)
 }
 
 // Default tab

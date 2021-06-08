@@ -163,3 +163,9 @@ table.table-bordered>tbody>tr>td {
   border-width: 10px 6px 0 6px;
   margin-left: -6px;
 }
+
+/** --- Components ---**/
+
+.text-label-info {
+  font-size: 14px;
+}
