@@ -494,7 +494,6 @@
 
             <!-- Start CC Impacts -->
             <div id="impacts" class="tab_layout">
-
                 <div
                     class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <div>
@@ -593,16 +592,29 @@
             <!-- Start Practices -->
             <div id="practices" class="tab_layout">
                 <div
-                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">                    
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="btn-group mr-2">
-                            <select id="cbo_practices_crop" class="form-control form-control-lg">
-                            </select>
-                            <select id="cbo_practices_hazard" class="form-control form-control-lg">
-                            </select>
-                            <!-- <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-                                -->
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <div>
+                        <label class="form-inline">
+                            Select level of aggregation: &nbsp;
+                        </label>
+                        <select id="cbo_practices_agg" class="form-control form-control-lg">
+                            <option value="dist">District</option>
+                            <option value="prov">Province</option>
+                            <option value="nati">National</option>
+                        </select>
+                    </div>
+                    <div style="max-width:50%">
+                        <label class="form-inline">&nbsp;</label>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group mr-2">
+                                <select id="cbo_practices_crop" class="form-control form-control-lg">
+                                </select>
+                                <select id="cbo_practices_hazard" class="form-control form-control-lg">
+                                </select>
+                                <!-- <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                                    -->
+                            </div>
                         </div>
                     </div>
                 </div>

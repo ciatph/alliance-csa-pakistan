@@ -23,6 +23,9 @@ let allDistricts
 // impacts data
 let impactsData
 
+// practices data
+let practicesData
+
 // Global function
 jQuery(document).ready(async function () {
   $('[data-toggle="tooltip"]').tooltip()
@@ -75,6 +78,11 @@ jQuery(document).ready(async function () {
   // Sub tab - Climate Impacts aggregation dropdown menu
   $('#cbo_impact_agg').on('change', function (e) {
     renderClimateImpacts(e.target.value)
+  })
+
+  // Sub tab - Practices aggregation dropdown menu
+  $('#cbo_practices_agg').on('change', function (e) {
+    renderPractices(e.target.value)
   })
 })
 
@@ -202,40 +210,29 @@ async function click_tab (tab_selected) {
     $('#title').html('Practices')
     $('#description').html('This tab presents the types of CSA practices prioritised by experts in the district, along with the areas were they have an impact, the hazards they address, and the barriers to adoption. the practices can be filtered by the commodity they look at, the areas where they have an impact or the types of hazards they address, allowing decision makers to identify practices that address certain priority issues.')
     $('#practices').removeClass('d-none')
-    d3.csv(`${baseDataURL}data/practices/practices.csv`, function (error, data) {
-      if (error) { console.log(error) }
-      practices_d = data.filter(function (item) { return item.district === district })
 
-      // Filling the cbo controls with hazard and crops
-      const crop = Array.from(new Set(d3.map(practices_d, function (d) { return d.crop }).keys()))
-      const cbo_practices_crop = $('#cbo_practices_crop')
-      cbo_practices_crop.empty()
-      crop.forEach(function (i, v) {
-        cbo_practices_crop.append($('<option />').val(i).text(i))
-      })
-      cbo_practices_crop.append($('<option />').val('All').text('All'))
-      cbo_practices_crop.val('All')
+    // Display the selected district and province names
+    if (district && province) {
+      const options = {
+        dist: `District - ${province ?? ''}`,
+        prov: `Province - ${district ?? ''}`,
+        nati: `National - ${district ? 'Pakistan' : ''}`
+      }
 
-      const hazard = Array.from(new Set(d3.map(practices_d, function (d) { return d.hazard }).keys()))
-      const cbo_practices_hazard = $('#cbo_practices_hazard')
-      cbo_practices_hazard.empty()
-      hazard.forEach(function (i, v) {
-        cbo_practices_hazard.append($('<option />').val(i).text(i))
+      const select = $('#cbo_practices_agg')
+      select.empty()
+      $.each(Object.keys(options), function () {
+        select.append($('<option />').val(this).text(options[this]))
       })
-      cbo_practices_hazard.append($('<option />').val('All').text('All'))
-      cbo_practices_hazard.val('All')
+      select.val('dist')
+    }
 
-      // Set the event change for both controls
-      cbo_practices_crop.on('change', function (e) {
-        practices_fill(cbo_practices_crop.val(), cbo_practices_hazard.val())
-      })
-      cbo_practices_hazard.on('change', function (e) {
-        practices_fill(cbo_practices_crop.val(), cbo_practices_hazard.val())
-      })
+    // Load the impacts data
+    if (!practicesData) {
+      practicesData = await loadD3CSVData('/practices/practices.csv')
+    }
 
-      // Default fill
-      practices_fill(cbo_practices_crop.val(), cbo_practices_hazard.val())
-    })
+    renderPractices()
   } else if (tab === 'enablers') {
     $('#title').html('Enablers')
     $('#description').html('CSA enablers provide essential services and build core capacities, empowering individuals and agrarian communities to better manage their response to climate related pressures. This section looks at which types of enabler are prioritised in each of the districts.')
@@ -802,7 +799,7 @@ function impact_fill_table (crop, hazard, aggLevel) {
 
   // Sum multiple counts, if amy
   const aggCount = count.values().reduce((acc, item) => {
-    if (!acc[item.severity]) {
+    if (acc[item.severity] === undefined) {
       acc[item.severity] = parseInt(item.count)
     } else {
       console.log(`---MULTIPLE COUNT, adding ${acc[item.severity]} + ${item.severity}, ${item.district} - ${item.count}`)
@@ -875,44 +872,138 @@ function impact_fill_table (crop, hazard, aggLevel) {
 /**
  * Function which filter dataset for practices and show data into the table
  */
-function practices_fill (crop, hazard) {
+function practices_fill (crop, hazard, level) {
   // Filtering data
-  const records = practices_d.filter(function (item) { return (crop === 'All' ? true : item.crop === crop) && (hazard === 'All' ? true : item.hazard === hazard || item.hazard_1 === hazard || item.hazard_2 === hazard || item.hazard_3 === hazard) })
+  if (level === 'dist') {
+    // Original filtering for 'districts' level
+    const records = practices_d.filter(function (item) { return (crop === 'All' ? true : item.crop === crop) && (hazard === 'All' ? true : item.hazard === hazard || item.hazard_1 === hazard || item.hazard_2 === hazard || item.hazard_3 === hazard) })
 
-  // let table = '';
-  let table = '<table class="table table-bordered table-sm">'
-  for (let i = 0; i < records.length; i++) {
-    table = table + '<tr class="table-secondary d-flex">'
-    table = table + '<td class="col-1 text-center"><span class="practices_id">' + records[i].Order + '</span></td>'
-    table = table + '<td class="col-2"><h4>' + records[i].crop + '</h4><p class="text-justify">' + records[i].csa + '</p><p class="text-warning"><b>' + records[i].adoption + '</b></p></td>'
-    table = table + '<td class="col-5"><table class="table borderless"><tr><td>' +
-                    (records[i].ind_1 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_1 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_1 + '" />') +
-                    (records[i].ind_2 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_2 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_2 + '" />') +
-                    (records[i].ind_3 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_3 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_3 + '" />') +
-                    (records[i].ind_4 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_4 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_4 + '" />') +
-                    (records[i].ind_5 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_5 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_5 + '" />') +
-                    (records[i].ind_6 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_6 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_6 + '" />') +
-                    '</td></tr>'
-    table = table + '<tr><td>' +
-                    (records[i].hazard === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/' + records[i].hazard + '.png" class="rounded practices_img_icons" alt="' + records[i].hazard + '" />') +
-                    (records[i].hazard_1 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/' + records[i].hazard_1 + '.png" class="rounded practices_img_icons" alt="' + records[i].hazard_1 + '" />') +
-                    (records[i].hazard_2 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/' + records[i].hazard_2 + '.png" class="rounded practices_img_icons" alt="' + records[i].hazard_2 + '" />') +
-                    (records[i].hazard_3 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/' + records[i].hazard_3 + '.png" class="rounded practices_img_icons" alt="' + records[i].hazard_3 + '" />') +
-                    '</td></tr></table></td>'
-    table = table + '<td class="col-4"><table class="table borderless">'
-    if (records[i].barrier_1 !== '') {
-      table = table + '<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/' + records[i].barrier_1 + '.png" class="rounded practices_img_icons" alt="' + records[i].barrier_1 + '" /></td>' +
-                        '<td>' + records[i].b1_exp + '</td></tr>'
+    // let table = '';
+    let table = '<table class="table table-bordered table-sm">'
+    for (let i = 0; i < records.length; i++) {
+      table = table + '<tr class="table-secondary d-flex">'
+      table = table + '<td class="col-1 text-center"><span class="practices_id">' + records[i].Order + '</span></td>'
+      table = table + '<td class="col-2"><h4>' + records[i].crop + '</h4><p class="text-justify">' + records[i].csa + '</p><p class="text-warning"><b>' + records[i].adoption + '</b></p></td>'
+      table = table + '<td class="col-5"><table class="table borderless"><tr><td>' +
+                      (records[i].ind_1 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_1 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_1 + '" />') +
+                      (records[i].ind_2 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_2 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_2 + '" />') +
+                      (records[i].ind_3 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_3 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_3 + '" />') +
+                      (records[i].ind_4 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_4 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_4 + '" />') +
+                      (records[i].ind_5 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_5 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_5 + '" />') +
+                      (records[i].ind_6 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/' + records[i].ind_6 + '.png" class="rounded practices_img_icons" alt="' + records[i].ind_6 + '" />') +
+                      '</td></tr>'
+      table = table + '<tr><td>' +
+                      (records[i].hazard === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/' + records[i].hazard + '.png" class="rounded practices_img_icons" alt="' + records[i].hazard + '" />') +
+                      (records[i].hazard_1 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/' + records[i].hazard_1 + '.png" class="rounded practices_img_icons" alt="' + records[i].hazard_1 + '" />') +
+                      (records[i].hazard_2 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/' + records[i].hazard_2 + '.png" class="rounded practices_img_icons" alt="' + records[i].hazard_2 + '" />') +
+                      (records[i].hazard_3 === '' ? '' : '<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/' + records[i].hazard_3 + '.png" class="rounded practices_img_icons" alt="' + records[i].hazard_3 + '" />') +
+                      '</td></tr></table></td>'
+      table = table + '<td class="col-4"><table class="table borderless">'
+      if (records[i].barrier_1 !== '') {
+        table = table + '<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/' + records[i].barrier_1 + '.png" class="rounded practices_img_icons" alt="' + records[i].barrier_1 + '" /></td>' +
+                          '<td>' + records[i].b1_exp + '</td></tr>'
+      }
+      if (records[i].barrier_2 !== '') {
+        table = table + '<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/' + records[i].barrier_2 + '.png" class="rounded practices_img_icons" alt="' + records[i].barrier_2 + '" /></td>' +
+                          '<td>' + records[i].b2_exp + '</td></tr>'
+      }
+      table = table + '</table></td>'
+      table = table + '</tr>'
     }
-    if (records[i].barrier_2 !== '') {
-      table = table + '<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/' + records[i].barrier_2 + '.png" class="rounded practices_img_icons" alt="' + records[i].barrier_2 + '" /></td>' +
-                        '<td>' + records[i].b2_exp + '</td></tr>'
+    // table = table + '</div>';
+    $('#practices_table').html(table)
+  } else {
+    // Filtering for provincial and nat'l agg levels
+    const records = practices_d.filter(function (item) { return (hazard === 'All' ? true : item.hazard === hazard || item.hazard_1 === hazard || item.hazard_2 === hazard || item.hazard_3 === hazard) })
+
+    // Get unique categories by 'CSA Category'
+    const p_merged = records.reduce((acc, item) => {
+      if (acc[item['CSA Category']] === undefined) {
+        acc[item['CSA Category']] = {
+          frequency: 1,
+          ranking: parseFloat(item.Ranking),
+          indicators: [],
+          hazards: []
+        }
+      } else {
+        // Sum frequency (count) and ranking
+        acc[item['CSA Category']].frequency += 1
+        acc[item['CSA Category']].ranking += parseFloat(item.Ranking)
+      }
+      // Get unique indicators
+      for (let i = 1; i <= 5; i += 1) {
+        if (acc[item['CSA Category']].indicators.indexOf(item[`ind_${i}`]) === -1 && item[`ind_${i}`] !== '') {
+          acc[item['CSA Category']].indicators.push(item[`ind_${i}`])
+        }
+      }
+      // Get unique hazards
+      for (let i = 0; i <= 3; i += 1) {
+        const key = (i === 0) ? 'hazard' : `hazard_${i}`
+        if (acc[item['CSA Category']].hazards.indexOf(item[key]) === -1 && item[key] !== '') {
+          acc[item['CSA Category']].hazards.push(item[key])
+        }
+      }
+      return { ...acc }
+    }, {})
+
+    // Get unique barriers by 'CSA Category'
+    const p_merged_barriers = records.reduce((acc, item) => {
+      if (acc[item['CSA Category']] === undefined) {
+        acc[item['CSA Category']] = {}
+      }
+
+      if (item.barrier_1 !== '') {
+        if (acc[item['CSA Category']][item.barrier_1] === undefined) {
+          acc[item['CSA Category']][item.barrier_1] = []
+        }
+        if (item.b1_exp !== '' && acc[item['CSA Category']][item.barrier_1].indexOf(item.b1_exp) === -1) {
+          acc[item['CSA Category']][item.barrier_1].push(item.b1_exp)
+        }
+      }
+
+      if (item.barrier_2 !== '') {
+        if (acc[item['CSA Category']][item.barrier_2] === undefined) {
+          acc[item['CSA Category']][item.barrier_2] = []
+        }
+        if (item.b2_exp !== '' && acc[item['CSA Category']][item.barrier_2].indexOf(item.b2_exp) === -1) {
+          acc[item['CSA Category']][item.barrier_2].push(item.b2_exp)
+        }
+      }
+      return { ...acc }
+    }, {})
+    console.log(p_merged_barriers)
+
+    let table = '<table class="table table-bordered table-sm">'
+    for (const key in p_merged) {
+      table += '<tr class="table-secondary d-flex">'
+      table += `<td class="col-4">
+        <h4>${key}</h4>
+        <p>
+          <b>Frequency:</b> ${p_merged[key].frequency}<br>
+          <b>Avg. Ranking:</b> ${p_merged[key].ranking / p_merged[key].frequency}
+        </p>
+      </td>`
+      table += '<td class="col-4"><table class="table borderless"><tr><td>'
+      p_merged[key].indicators.forEach((item, index) => {
+        table += `<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/${item}.png" class="rounded practices_img_icons" alt="${item}" />`
+      })
+      table += '</td></tr>'
+      table += '<tr><td>'
+      p_merged[key].hazards.forEach((item, index) => {
+        table += `<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/${item}.png" class="rounded practices_img_icons" alt="${item}" />`
+      })
+      table += '</td></tr></table></td>'
+      table += '<td class="col-4"><table class="table borderless">'
+      const barrier1Keys = Object.keys(p_merged_barriers[key])
+      barrier1Keys.forEach((item, index) => {
+        table += `<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/${item}.png" class="rounded practices_img_icons" alt="' + ${item} + '" /></td>`
+        table += `<td>${p_merged_barriers[key][item].toString().split(',').join(', ')}</td></tr>`
+      })
+      table = table + '</table></td>'
+      table = table + '</tr>'
     }
-    table = table + '</table></td>'
-    table = table + '</tr>'
+    $('#practices_table').html(table)
   }
-  // table = table + '</div>';
-  $('#practices_table').html(table)
 }
 
 /**
@@ -1072,36 +1163,11 @@ const selectSiteLevel = (level) => {
  * Function to re-render the climate impacts data based on selected aggregation.
  */
 async function renderClimateImpacts (level = 'dist') {
-  // District selected from the Site Selection tab, along with 'province'
-  if (!district) {
-    return
-  }
-
-  // Set aggregation level
-  let aggLevel = 'district'
-  let aggValue = district
-
-  switch (level) {
-  case 'dist':
-    // set the aggregation value to the selected district name
-    aggLevel = 'district'
-    aggValue = district
-    break
-  case 'prov':
-    // set the aggregation value to the selected province name
-    aggLevel = 'province'
-    aggValue = province
-    break
-  case 'nati':
-    aggLevel = null
-    aggValue = null
-    break
-  default: break
-  }
+  const aggLevel = getAggregationLevel(level)
 
   // Filter data by province or district
-  if (aggLevel && aggValue) {
-    hazard_d = impactsData.filter(function (item) { return item[aggLevel] === aggValue })
+  if (aggLevel.level && aggLevel.value) {
+    hazard_d = impactsData.filter(function (item) { return item[aggLevel.level] === aggLevel.value })
   } else {
     // No filters for 'national'
     hazard_d = impactsData
@@ -1128,7 +1194,7 @@ async function renderClimateImpacts (level = 'dist') {
   cbo_impact_hazard.append($('<option />').val('All').text('All'))
   cbo_impact_hazard.val('All')
 
-  console.log(`selecting ${aggLevel} == ${aggValue}`)
+  console.log(`selecting ${aggLevel.level} == ${aggLevel.value}`)
   console.log(`data: ${hazard_d.length}\nlivestock: ${crops_livestock.length}\nhazards: ${hazard.length}`)
 
   // Set the event change for both controls
@@ -1141,6 +1207,104 @@ async function renderClimateImpacts (level = 'dist') {
 
   // Default fill
   impact_fill_table(cbo_impact_crop.val(), cbo_impact_hazard.val(), level)
+}
+
+/**
+ * Function to re-render the climate impacts data based on selected aggregation.
+ */
+async function renderPractices (level = 'dist') {
+  const aggLevel = getAggregationLevel(level)
+  let cbo_practices_crop
+
+  // Filter data by province or district
+  if (aggLevel.level && aggLevel.value) {
+    practices_d = practicesData.filter(function (item) { return item[aggLevel.level] === aggLevel.value })
+  } else {
+    // No filters for 'national'
+    practices_d = practicesData
+  }
+
+  // Filling the cbo controls with hazard and crops
+  if (level === 'dist') {
+    const crop = Array.from(new Set(d3.map(practices_d, function (d) { return d.crop }).keys()))
+    cbo_practices_crop = $('#cbo_practices_crop')
+    cbo_practices_crop.empty()
+    cbo_practices_crop.off('change')
+    crop.forEach(function (i, v) {
+      cbo_practices_crop.append($('<option />').val(i).text(i))
+    })
+    cbo_practices_crop.append($('<option />').val('All').text('All'))
+    cbo_practices_crop.val('All')
+    $('#cbo_practices_crop').css('display', 'block')
+  } else {
+    // Do not display the crops selection dropdown on provincial and nat'l agg filters
+    $('#cbo_practices_crop').css('display', 'none')
+  }
+
+  const hazard = Array.from(new Set(d3.map(practices_d, function (d) { return d.hazard }).keys()))
+  const cbo_practices_hazard = $('#cbo_practices_hazard')
+  cbo_practices_hazard.empty()
+  cbo_practices_hazard.off('change')
+  hazard.forEach(function (i, v) {
+    cbo_practices_hazard.append($('<option />').val(i).text(i))
+  })
+  cbo_practices_hazard.append($('<option />').val('All').text('All'))
+  cbo_practices_hazard.val('All')
+
+  // Set the event change for both controls
+  const crop_val = (level === 'dist') ? cbo_practices_crop.val() : 'All'
+
+  if (level === 'dist') {
+    cbo_practices_crop.on('change', function (e) {
+      console.log('---crop changed')
+      practices_fill(cbo_practices_crop.val(), cbo_practices_hazard.val(), level)
+    })
+  }
+  cbo_practices_hazard.on('change', function (e) {
+    console.log('---hazard changed')
+    practices_fill(crop_val, cbo_practices_hazard.val(), level)
+  })
+
+  // Default fill
+  practices_fill(crop_val, cbo_practices_hazard.val(), level)
+}
+
+/**
+ * Function to get the selected aggregation level district|province|nati
+ * and their values. i.e., province='Punjab', district='Muzaffargarh'
+ */
+const getAggregationLevel = (level = 'dist') => {
+  // District selected from the Site Selection tab, along with 'province'
+  if (!district) {
+    return false
+  }
+
+  // Set aggregation level
+  let aggLevel = 'district'
+  let aggValue = district
+
+  switch (level) {
+  case 'dist':
+    // set the aggregation value to the selected district name
+    aggLevel = 'district'
+    aggValue = district
+    break
+  case 'prov':
+    // set the aggregation value to the selected province name
+    aggLevel = 'province'
+    aggValue = province
+    break
+  case 'nati':
+    aggLevel = null
+    aggValue = null
+    break
+  default: break
+  }
+
+  return {
+    level: aggLevel,
+    value: aggValue
+  }
 }
 
 // Default tab
