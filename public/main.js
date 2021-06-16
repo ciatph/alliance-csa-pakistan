@@ -365,14 +365,18 @@ function cropping_calendar_hazard (crop_c, hazard_c) {
     table = table + '<td>' + value + '</td>'
     $.each(months, function (i, v) {
       const cell = crop_c.filter(function (d) { return d.crop_livestock === value && d.month === v })[0]
-      table = table + '<td class="crop_c_' + cell.value + '" ' +
+      const mngtPractice = (cell['management Practices'] !== '') ? cell['management Practices'] : '&nbsp;'
+      table = table + '<td id="crop_c_' + i + '" class="crop_c_' + cell.value + '" ' +
                         'data-toggle="tooltip" ' +
+                        'onmouseover="$(\'#mngt_practice_label\').html(\'' + mngtPractice + '\')" ' +
+                        'onmouseout="$(\'#mngt_practice_label\').html()" ' +
                         // 'data-position="bottom" '  +
-                        'title="' + cell['management Practices'] + '"></td>'
+                        'title="' + mngtPractice + '"></td>'
       // 'data-tooltip="' + cell.practices + '"></td>';
     })
     table = table + '</tr>'
   })
+
   // table = table + '</table>';
   $('#cropping_calendar_table  > tbody').html(table)
 
