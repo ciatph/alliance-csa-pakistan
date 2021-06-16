@@ -1,5 +1,6 @@
 // Base Data URL
 const baseDataURL = window.location.pathname
+let test
 
 // --- Data Store ---
 
@@ -356,7 +357,7 @@ function cropping_fill (production) {
 /**
  * Function which fill cropping data about calendar and hazard
  */
-function cropping_calendar_hazard (crop_c, hazard_c) {
+async function cropping_calendar_hazard (crop_c, hazard_c) {
   // Cropping calendar
   const crops = Array.from(new Set(crop_c.map(function (d) { return d.crop_livestock })))
   let table = ''
@@ -379,6 +380,19 @@ function cropping_calendar_hazard (crop_c, hazard_c) {
 
   // table = table + '</table>';
   $('#cropping_calendar_table  > tbody').html(table)
+
+  // Hazard scale
+  try {
+    const scale = await loadD3CSVData('/cropping/scale_legend.csv')
+    test = scale
+    const legend = scale.reduce((acc, item) => {
+      acc += `<strong>${item.value}</strong>: ${item.legend}<br>`
+      return acc
+    }, '')
+    $('#cropping_hazard_legend').html(legend)
+  } catch (err) {
+    console.error(err.messgae)
+  }
 
   // Hazard calendar
   const hazards = Array.from(new Set(hazard_c.map(function (d) { return d.hazard })))

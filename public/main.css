@@ -169,3 +169,7 @@ table.table-bordered>tbody>tr>td {
 .text-label-info {
   font-size: 14px;
 }
+
+#mngt_practice_label {
+  color: gray;
+}
