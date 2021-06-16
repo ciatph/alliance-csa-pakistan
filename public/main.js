@@ -845,12 +845,15 @@ function impact_fill_table (crop, hazard, aggLevel) {
   const _severity = severity.keys()
 
   // Sum multiple counts, if amy
+  const aggCountDistricts = {}
   const aggCount = count.values().reduce((acc, item) => {
     if (acc[item.severity] === undefined) {
       acc[item.severity] = parseInt(item.count)
+      aggCountDistricts[item.severity] = [item.district]
     } else {
       console.log(`---MULTIPLE COUNT, adding ${acc[item.severity]} + ${item.severity}, ${item.district} - ${item.count}`)
       acc[item.severity] += parseInt(item.count)
+      aggCountDistricts[item.severity].push(item.district)
     }
     return { ...acc }
   }, {})
@@ -900,16 +903,17 @@ function impact_fill_table (crop, hazard, aggLevel) {
     // Severity table
     table = '<table class="table table-striped table-sm">'
     for (let i = 0; i < _severity.length; i++) {
-      table = table + '<tr><th>Severity</th><td>' + _severity[i] + '</td><th>Count</th><td>' + aggCount[_severity[i]] +
-       '</td></tr>'
+      table = table + `<tr>
+        <th>Severity</th>
+        <td>${_severity[i]}
+          <div class="text-label-info">Districts: ${aggCountDistricts[_severity[i]].toString().split(',').join(', ')}</div>
+        </td>
+        <th>Count</th>
+        <td>${aggCount[_severity[i]]}</td>
+        </tr>`
     }
     table = table + '</table>'
     $('#impacts_severity').html(table)
-
-    // Show districts included on the provincial & nat'l levels
-    if (dists.length > 0) {
-      $('#impacts_severity_districts').html(`<strong>Districts:</strong><br>${dists.toString().split(',').join(', ')}`)
-    }
   } else {
     $('#impacts_severity').html('')
     $('#impacts_severity_districts').html('')
