@@ -1027,7 +1027,7 @@ function practices_fill (crop, hazard, level) {
         <h4>${key}</h4>
         <p>
           <b>Frequency:</b> ${p_merged[key].frequency}<br>
-          <b>Avg. Ranking:</b> ${p_merged[key].ranking / p_merged[key].frequency}
+          <b>Avg. Ranking:</b> ${(p_merged[key].ranking / p_merged[key].frequency).toFixed(3)}
         </p>
       </td>`
       table += '<td class="col-4"><table class="table borderless"><tr><td>'
