@@ -179,8 +179,8 @@ async function click_tab (tab_selected) {
     // Display the selected district and province names
     if (district && province) {
       const options = {
-        dist: `District - ${province ?? ''}`,
-        prov: `Province - ${district ?? ''}`,
+        dist: `District - ${district ?? ''}`,
+        prov: `Province - ${province ?? ''}`,
         nati: `National - ${district ? 'Pakistan' : ''}`
       }
 
@@ -215,8 +215,8 @@ async function click_tab (tab_selected) {
     // Display the selected district and province names
     if (district && province) {
       const options = {
-        dist: `District - ${province ?? ''}`,
-        prov: `Province - ${district ?? ''}`,
+        dist: `District - ${district ?? ''}`,
+        prov: `Province - ${province ?? ''}`,
         nati: `National - ${district ? 'Pakistan' : ''}`
       }
 
