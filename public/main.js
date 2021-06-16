@@ -446,21 +446,51 @@ function climate_load () {
  * Function which displays the list of all provinces and villages on the site selection sub-tab
  */
 function site_fill () {
-  let provinces = ''
-  for (let i = 0; i < allProvinces.length; i += 1) {
-    let table = '<table class="table table-bordered table-sm">'
-    let row = `<tr><th>${allProvinces[i]}</th></tr>`
-
-    const districts = mapJSON.features.filter(x => x.properties.NAME_1 === allProvinces[i] && allDistricts.includes(x.properties.NAME_3)).map(x => x.properties.NAME_3)
-    for (let j = 0; j < districts.length; j += 1) {
-      row += `<tr><td>${districts[j]}</td></tr>`
-    }
-
-    table += `${row}</table>`
-    provinces += table
+  if ($('#site_provinces_accordion').html().replaceAll(' ', '').length > 2) {
+    console.log('---skipping fill')
+    return
   }
 
-  $('#site_provinces').html(provinces)
+  const geographicFilter = mapData
+    .filter(x => x.site === '1')
+    .reduce((acc, curr) => {
+      if (!acc[curr.NAME_1]) {
+        acc[curr.NAME_1] = [curr.NAME_3]
+      } else {
+        if (!acc[curr.NAME_1].includes(curr.NAME_3)) {
+          acc[curr.NAME_1].push(curr.NAME_3)
+        }
+      }
+      return { ...acc }
+    }, {})
+
+  const provinces = Object.keys(geographicFilter)
+  let str = ''
+  for (let i = 0; i < provinces.length; i += 1) {
+    const districts = geographicFilter[provinces[i]].reduce((acc, item) => {
+      console.log(item)
+      acc += `<div>${item}</div>`
+      return acc
+    }, '')
+
+    str += `<div class="card">
+      <div class="card-header" id="heading_${provinces[i]}">
+        <h5 class="mb-0">
+          <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_${provinces[i]}" aria-expanded="true" aria-controls="collapse_${provinces[i]}">
+            ${provinces[i]}
+          </button>
+        </h5>
+      </div>
+
+      <div id="collapse_${provinces[i]}" class="collapse show" aria-labelledby="heading_${provinces[i]}" data-parent="#site_provinces_accordion">
+        <div class="card-body">
+          ${districts}
+        </div>
+      </div>
+    </div>`
+  }
+
+  $('#site_provinces_accordion').html(str)
 }
 
 /**
