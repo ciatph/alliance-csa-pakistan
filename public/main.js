@@ -101,7 +101,7 @@ let practices_d = []
 let climate_indicator_d = []
 let climate_indicator_province = ''
 let climate_indicator_district = ''
-const climate_indicator_var = ''
+let climate_indicator_var = ''
 let climate_indicator_coords = []
 let crop_c_full = []
 let hazard_c_full = []
@@ -486,7 +486,6 @@ function site_fill () {
   let str = ''
   for (let i = 0; i < provinces.length; i += 1) {
     const districts = geographicFilter[provinces[i]].reduce((acc, item) => {
-      console.log(item)
       acc += `<div>${item}</div>`
       return acc
     }, '')
@@ -683,7 +682,7 @@ function climate_indicator_fill (indicator, season) {
   $('.indicator_plot svg').html('')
   $('#climate_indicator_map').html('')
   // Set global vars
-  climate_indicator_let = indicator
+  climate_indicator_let = climate_indicator_var = indicator
 
   const i_i = climate_indicator_d.filter(function (d) { return d.season === season && d.vars === indicator })
   const i_p = [{
