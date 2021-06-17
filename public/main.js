@@ -478,6 +478,7 @@ function climate_load () {
         const indicators = d3.map(climate_indicator_d, function (d) { return d.vars }).keys()
         const cbo_climate_indicator = $('#cbo_climate_indicator')
         cbo_climate_indicator.empty()
+        cbo_climate_indicator.off('change')
         $.each(indicators, function () {
           cbo_climate_indicator.append($('<option />').val(this).text(this.toUpperCase()))
         })
@@ -485,6 +486,7 @@ function climate_load () {
         const season = d3.map(climate_indicator_d, function (d) { return d.season }).keys()
         const cbo_climate_season = $('#cbo_climate_season')
         cbo_climate_season.empty()
+        cbo_climate_season.off('change')
         $.each(season, function () {
           cbo_climate_season.append($('<option />').val(this).text(this))
         })
@@ -727,6 +729,14 @@ function climate_indicator_fill (indicator, season) {
   $('#climate_indicator_map').html('')
   // Set global vars
   climate_indicator_let = climate_indicator_var = indicator
+  const indicator_labels = {
+    CDD: 'Days',
+    NDWS: 'Days',
+    IRR: 'IRR',
+    P5D: 'P5D',
+    NT35: 'Days',
+    P95: 'P95'
+  }
 
   const i_i = climate_indicator_d.filter(function (d) { return d.season === season && d.vars === indicator })
   const i_p = [{
@@ -780,7 +790,7 @@ function climate_indicator_fill (indicator, season) {
     // .tickFormat(d3.format('.0f'))
 
     ind_p.yAxis // Chart y-axis settings
-      .axisLabel('Value')
+      .axisLabel(indicator_labels[indicator])
       .tickFormat(d3.format('.0f'))
 
     d3.select('#climate_indicator_plot svg') // Select the <svg> element you want to render the chart in.
@@ -816,7 +826,7 @@ function climate_indicator_fill (indicator, season) {
   const legend = L.control({ position: 'topright' })
   legend.onAdd = function (map) {
     const div = L.DomUtil.create('div', 'info legend')
-    div.innerHTML += '<h4>Scale (' + climate_indicator_let + ')</h4>' +
+    div.innerHTML += '<h4>Scale (' + indicator_labels[climate_indicator_let] + ')</h4>' +
                     '<div id="map_scale"><svg></svg></div>'
     return div
   }
