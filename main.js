@@ -1,5 +1,6 @@
 // Base Data URL
 const baseDataURL = window.location.pathname
+let test
 
 // --- Data Store ---
 
@@ -25,6 +26,9 @@ let impactsData
 
 // practices data
 let practicesData
+
+// risks data
+let risksData
 
 // Global function
 jQuery(document).ready(async function () {
@@ -84,6 +88,11 @@ jQuery(document).ready(async function () {
   $('#cbo_practices_agg').on('change', function (e) {
     renderPractices(e.target.value)
   })
+
+  // Sub tab - Climate Risks aggregation dropdown menu
+  $('#cbo_risks_agg').on('change', function (e) {
+    renderClimateRisks(e.target.value)
+  })
 })
 
 // Parameters
@@ -100,7 +109,7 @@ let practices_d = []
 let climate_indicator_d = []
 let climate_indicator_province = ''
 let climate_indicator_district = ''
-const climate_indicator_var = ''
+let climate_indicator_var = ''
 let climate_indicator_coords = []
 let crop_c_full = []
 let hazard_c_full = []
@@ -178,8 +187,8 @@ async function click_tab (tab_selected) {
     // Display the selected district and province names
     if (district && province) {
       const options = {
-        dist: `District - ${province ?? ''}`,
-        prov: `Province - ${district ?? ''}`,
+        dist: `District - ${district ?? ''}`,
+        prov: `Province - ${province ?? ''}`,
         nati: `National - ${district ? 'Pakistan' : ''}`
       }
 
@@ -193,7 +202,12 @@ async function click_tab (tab_selected) {
 
     // Load the impacts data
     if (!impactsData) {
-      impactsData = await loadD3CSVData('/impacts/impacts.csv')
+      try {
+        impactsData = await loadD3CSVData('/impacts/impacts.csv')
+      } catch (err) {
+        console.error(err.message)
+        return
+      }
     }
 
     renderClimateImpacts()
@@ -201,11 +215,34 @@ async function click_tab (tab_selected) {
     $('#title').html('Climate risk')
     $('#description').html('This tab presents a risk matrix generated through responses from agricultural experts in the districts on the frequency and severity of major hazards.')
     $('#risk').removeClass('d-none')
-    d3.csv(`${baseDataURL}data/risk/risk.csv`, function (error, data) {
-      if (error) { console.log(error) }
-      const risk_d = data.filter(function (item) { return item.district === district })
-      risk_fill(risk_d)
-    })
+
+    // Display the selected district and province names
+    if (district && province) {
+      const options = {
+        dist: `District - ${district ?? ''}`,
+        prov: `Province - ${province ?? ''}`,
+        nati: `National - ${district ? 'Pakistan' : ''}`
+      }
+
+      const select = $('#cbo_risks_agg')
+      select.empty()
+      $.each(Object.keys(options), function () {
+        select.append($('<option />').val(this).text(options[this]))
+      })
+      select.val('dist')
+    }
+
+    // Load the impacts data
+    if (!risksData) {
+      try {
+        risksData = await loadD3CSVData('/risk/risk.csv')
+      } catch (err) {
+        console.error(err.message)
+        return
+      }
+    }
+
+    renderClimateRisks()
   } else if (tab === 'practices') {
     $('#title').html('Practices')
     $('#description').html('This tab presents the types of CSA practices prioritised by experts in the district, along with the areas were they have an impact, the hazards they address, and the barriers to adoption. the practices can be filtered by the commodity they look at, the areas where they have an impact or the types of hazards they address, allowing decision makers to identify practices that address certain priority issues.')
@@ -214,8 +251,8 @@ async function click_tab (tab_selected) {
     // Display the selected district and province names
     if (district && province) {
       const options = {
-        dist: `District - ${province ?? ''}`,
-        prov: `Province - ${district ?? ''}`,
+        dist: `District - ${district ?? ''}`,
+        prov: `Province - ${province ?? ''}`,
         nati: `National - ${district ? 'Pakistan' : ''}`
       }
 
@@ -229,7 +266,12 @@ async function click_tab (tab_selected) {
 
     // Load the impacts data
     if (!practicesData) {
-      practicesData = await loadD3CSVData('/practices/practices.csv')
+      try {
+        practicesData = await loadD3CSVData('/practices/practices.csv')
+      } catch (err) {
+        console.error(err.message)
+        return
+      }
     }
 
     renderPractices()
@@ -253,7 +295,11 @@ async function click_tab (tab_selected) {
   }).addTo(map)
 
   if (!mapData) {
-    mapData = await loadMapData()
+    try {
+      mapData = await loadMapData()
+    } catch (err) {
+      console.log(err.message)
+    }
     console.log('---map data loaded!')
 
     // Pre-load enablers data to use its province and district names list as reference for site selection
@@ -287,7 +333,8 @@ async function click_tab (tab_selected) {
       const layer_url = `${baseDataURL}data/maps/pakistan_map.json`
       mapJSON = await $.getJSON(layer_url)
     } catch (err) {
-      console.log(err.message)
+      console.error(err.message)
+      return
     }
   }
 
@@ -356,7 +403,7 @@ function cropping_fill (production) {
 /**
  * Function which fill cropping data about calendar and hazard
  */
-function cropping_calendar_hazard (crop_c, hazard_c) {
+async function cropping_calendar_hazard (crop_c, hazard_c) {
   // Cropping calendar
   const crops = Array.from(new Set(crop_c.map(function (d) { return d.crop_livestock })))
   let table = ''
@@ -365,16 +412,33 @@ function cropping_calendar_hazard (crop_c, hazard_c) {
     table = table + '<td>' + value + '</td>'
     $.each(months, function (i, v) {
       const cell = crop_c.filter(function (d) { return d.crop_livestock === value && d.month === v })[0]
-      table = table + '<td class="crop_c_' + cell.value + '" ' +
+      const mngtPractice = (cell['management Practices'] !== '') ? cell['management Practices'] : '&nbsp;'
+      table = table + '<td id="crop_c_' + i + '" class="crop_c_' + cell.value + '" ' +
                         'data-toggle="tooltip" ' +
+                        'onmouseover="$(\'#mngt_practice_label\').html(\'' + mngtPractice + '\')" ' +
+                        'onmouseout="$(\'#mngt_practice_label\').html()" ' +
                         // 'data-position="bottom" '  +
-                        'title="' + cell['management Practices'] + '"></td>'
+                        'title="' + mngtPractice + '"></td>'
       // 'data-tooltip="' + cell.practices + '"></td>';
     })
     table = table + '</tr>'
   })
+
   // table = table + '</table>';
   $('#cropping_calendar_table  > tbody').html(table)
+
+  // Hazard scale
+  try {
+    const scale = await loadD3CSVData('/cropping/scale_legend.csv')
+    test = scale
+    const legend = scale.reduce((acc, item) => {
+      acc += `<strong>${item.value}</strong>: ${item.legend}<br>`
+      return acc
+    }, '')
+    $('#cropping_hazard_legend').html(legend)
+  } catch (err) {
+    console.error(err.messgae)
+  }
 
   // Hazard calendar
   const hazards = Array.from(new Set(hazard_c.map(function (d) { return d.hazard })))
@@ -446,21 +510,50 @@ function climate_load () {
  * Function which displays the list of all provinces and villages on the site selection sub-tab
  */
 function site_fill () {
-  let provinces = ''
-  for (let i = 0; i < allProvinces.length; i += 1) {
-    let table = '<table class="table table-bordered table-sm">'
-    let row = `<tr><th>${allProvinces[i]}</th></tr>`
-
-    const districts = mapJSON.features.filter(x => x.properties.NAME_1 === allProvinces[i] && allDistricts.includes(x.properties.NAME_3)).map(x => x.properties.NAME_3)
-    for (let j = 0; j < districts.length; j += 1) {
-      row += `<tr><td>${districts[j]}</td></tr>`
-    }
-
-    table += `${row}</table>`
-    provinces += table
+  if ($('#site_provinces_accordion').html().replaceAll(' ', '').length > 2) {
+    console.log('---skipping fill')
+    return
   }
 
-  $('#site_provinces').html(provinces)
+  const geographicFilter = mapData
+    .filter(x => x.site === '1')
+    .reduce((acc, curr) => {
+      if (!acc[curr.NAME_1]) {
+        acc[curr.NAME_1] = [curr.NAME_3]
+      } else {
+        if (!acc[curr.NAME_1].includes(curr.NAME_3)) {
+          acc[curr.NAME_1].push(curr.NAME_3)
+        }
+      }
+      return { ...acc }
+    }, {})
+
+  const provinces = Object.keys(geographicFilter)
+  let str = ''
+  for (let i = 0; i < provinces.length; i += 1) {
+    const districts = geographicFilter[provinces[i]].reduce((acc, item) => {
+      acc += `<div>${item}</div>`
+      return acc
+    }, '')
+
+    str += `<div class="card">
+      <div class="card-header" id="heading_${provinces[i]}">
+        <h5 class="mb-0">
+          <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_${provinces[i]}" aria-expanded="true" aria-controls="collapse_${provinces[i]}">
+            ${provinces[i]}
+          </button>
+        </h5>
+      </div>
+
+      <div id="collapse_${provinces[i]}" class="collapse show" aria-labelledby="heading_${provinces[i]}" data-parent="#site_provinces_accordion">
+        <div class="card-body">
+          ${districts}
+        </div>
+      </div>
+    </div>`
+  }
+
+  $('#site_provinces_accordion').html(str)
 }
 
 /**
@@ -635,7 +728,7 @@ function climate_indicator_fill (indicator, season) {
   $('.indicator_plot svg').html('')
   $('#climate_indicator_map').html('')
   // Set global vars
-  climate_indicator_let = indicator
+  climate_indicator_let = climate_indicator_var = indicator
 
   const i_i = climate_indicator_d.filter(function (d) { return d.season === season && d.vars === indicator })
   const i_p = [{
@@ -798,12 +891,15 @@ function impact_fill_table (crop, hazard, aggLevel) {
   const _severity = severity.keys()
 
   // Sum multiple counts, if amy
+  const aggCountDistricts = {}
   const aggCount = count.values().reduce((acc, item) => {
     if (acc[item.severity] === undefined) {
       acc[item.severity] = parseInt(item.count)
+      aggCountDistricts[item.severity] = [item.district]
     } else {
       console.log(`---MULTIPLE COUNT, adding ${acc[item.severity]} + ${item.severity}, ${item.district} - ${item.count}`)
       acc[item.severity] += parseInt(item.count)
+      aggCountDistricts[item.severity].push(item.district)
     }
     return { ...acc }
   }, {})
@@ -853,16 +949,16 @@ function impact_fill_table (crop, hazard, aggLevel) {
     // Severity table
     table = '<table class="table table-striped table-sm">'
     for (let i = 0; i < _severity.length; i++) {
-      table = table + '<tr><th>Severity</th><td>' + _severity[i] + '</td><th>Count</th><td>' + aggCount[_severity[i]] +
-       '</td></tr>'
+      const dists = (aggLevel === 'dist') ? '' : `<div class="text-label-info">Districts: ${aggCountDistricts[_severity[i]].toString().split(',').join(', ')}</div>`
+      table = table + `<tr>
+        <th>Severity</th>
+        <td>${_severity[i]} ${dists}</td>
+        <th>Count</th>
+        <td>${aggCount[_severity[i]]}</td>
+        </tr>`
     }
     table = table + '</table>'
     $('#impacts_severity').html(table)
-
-    // Show districts included on the provincial & nat'l levels
-    if (dists.length > 0) {
-      $('#impacts_severity_districts').html(`<strong>Districts:</strong><br>${dists.toString().split(',').join(', ')}`)
-    }
   } else {
     $('#impacts_severity').html('')
     $('#impacts_severity_districts').html('')
@@ -980,7 +1076,7 @@ function practices_fill (crop, hazard, level) {
         <h4>${key}</h4>
         <p>
           <b>Frequency:</b> ${p_merged[key].frequency}<br>
-          <b>Avg. Ranking:</b> ${p_merged[key].ranking / p_merged[key].frequency}
+          <b>Avg. Ranking:</b> ${(p_merged[key].ranking / p_merged[key].frequency).toFixed(3)}
         </p>
       </td>`
       table += '<td class="col-4"><table class="table borderless"><tr><td>'
@@ -1009,18 +1105,47 @@ function practices_fill (crop, hazard, level) {
 /**
  * Function which fill table of risk for climate risk
  */
-function risk_fill (data) {
+function risk_fill (data, level = 'dist') {
   for (let i = 1; i < 5; i++) {
     for (let j = 1; j < 5; j++) {
       $('#r' + i + '-' + j).html('')
     }
   }
-  data.forEach(element => {
-    const key = '#r' + element.frequency + '-' + element.severity
-    if (element.severity !== '#N/A' && element.frequency !== '#N/A') {
-      $(key).html($(key).html() + '- ' + element.hazard + '<br />')
+
+  if (level === 'dist') {
+    data.forEach(element => {
+      const key = '#r' + element.frequency + '-' + element.severity
+      if (element.severity !== '#N/A' && element.frequency !== '#N/A') {
+        $(key).html($(key).html() + '- ' + element.hazard + '<br />')
+      }
+    })
+  } else {
+    // Count the risks for provincial & nat'l aggregation lvls
+    const aggRisks = risk_d.reduce((acc, item) => {
+      if (item.severity !== '#N/A' && item.frequency !== '#N/A') {
+        const key = `#r${item.frequency}-${item.severity}`
+        if (acc[key] === undefined) {
+          acc[key] = { [item.hazard]: 1 }
+        } else {
+          if (acc[key][item.hazard] === undefined) {
+            acc[key][item.hazard] = 1
+          } else {
+            acc[key][item.hazard] += 1
+          }
+        }
+      }
+      return { ...acc }
+    }, {})
+
+    for (const key in aggRisks) {
+      let text = ''
+      for (const risk in aggRisks[key]) {
+        const cnt = (aggRisks[key][risk] > 1) ? `(${aggRisks[key][risk]})` : ''
+        text += `- ${risk} ${cnt}<br>`
+      }
+      $(key).html(text)
     }
-  })
+  }
 }
 
 function enablers_load () {
@@ -1056,6 +1181,7 @@ function enablers_fill (data) {
   // table = table + '</table>';
   $('#enablers_table  > tbody').html(table)
 }
+
 /**
  * Function for each feature into the map
  */
@@ -1267,6 +1393,27 @@ async function renderPractices (level = 'dist') {
 
   // Default fill
   practices_fill(crop_val, cbo_practices_hazard.val(), level)
+}
+
+/**
+ * Function to re-render the climate risks data based on selected aggregation.
+ */
+async function renderClimateRisks (level = 'dist') {
+  const aggLevel = getAggregationLevel(level)
+  console.log(aggLevel)
+
+  // Filter data by province or district
+  if (aggLevel.level && aggLevel.value) {
+    // Note: Usual 'province' column is named 'providence' on CSV file
+    const renameLvl = (aggLevel.level === 'province') ? 'providence' : aggLevel.level
+    risk_d = risksData.filter(function (item) { return item[renameLvl] === aggLevel.value })
+  } else {
+    // No filters for 'national'
+    risk_d = risksData
+  }
+
+  // Default fill
+  risk_fill(risk_d, level)
 }
 
 /**
