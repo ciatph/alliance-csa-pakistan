@@ -731,11 +731,11 @@ function climate_indicator_fill (indicator, season) {
   climate_indicator_let = climate_indicator_var = indicator
   const indicator_labels = {
     CDD: 'Days',
-    NDWS: 'Days',
-    IRR: 'IRR',
-    P5D: 'P5D',
+    ndws: 'Days',
+    IRR: 'Value',
+    P5D: 'Value',
     NT35: 'Days',
-    P95: 'P95'
+    P95: 'Value'
   }
 
   const i_i = climate_indicator_d.filter(function (d) { return d.season === season && d.vars === indicator })
