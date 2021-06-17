@@ -1010,14 +1010,15 @@ function practices_fill (crop, hazard, level) {
     // Filtering for provincial and nat'l agg levels
     const records = practices_d.filter(function (item) { return (hazard === 'All' ? true : item.hazard === hazard || item.hazard_1 === hazard || item.hazard_2 === hazard || item.hazard_3 === hazard) })
 
-    // Get unique categories by 'CSA Category'
-    const p_merged = records.reduce((acc, item) => {
+    // Get unique categories by 'CSA Category' (store results in an Object)
+    let p_merged = records.reduce((acc, item) => {
       if (acc[item['CSA Category']] === undefined) {
         acc[item['CSA Category']] = {
           frequency: 1,
           ranking: parseFloat(item.Ranking),
           indicators: [],
-          hazards: []
+          hazards: [],
+          csa_cat: item['CSA Category']
         }
       } else {
         // Sum frequency (count) and ranking
@@ -1065,29 +1066,33 @@ function practices_fill (crop, hazard, level) {
       }
       return { ...acc }
     }, {})
-    console.log(p_merged_barriers)
+
+    // Sort (store results in an Array)
+    p_merged = Object.values(test).sort((a, b) => b.frequency - a.frequency)
 
     let table = '<table class="table table-bordered table-sm">'
-    for (const key in p_merged) {
+    for (let i = 0; i < p_merged.length; i += 1) {
       table += '<tr class="table-secondary d-flex">'
       table += `<td class="col-4">
-        <h4>${key}</h4>
+        <h4>${p_merged[i].csa_cat}</h4>
         <p>
-          <b>Frequency:</b> ${p_merged[key].frequency}<br>
-          <b>Avg. Ranking:</b> ${(p_merged[key].ranking / p_merged[key].frequency).toFixed(3)}
+          <b>Frequency:</b> ${p_merged[i].frequency}<br>
+          <b>Avg. Ranking:</b> ${(p_merged[i].ranking / p_merged[i].frequency).toFixed(3)}
         </p>
       </td>`
       table += '<td class="col-4"><table class="table borderless"><tr><td>'
-      p_merged[key].indicators.forEach((item, index) => {
+      p_merged[i].indicators.forEach((item, index) => {
         table += `<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/${item}.png" class="rounded practices_img_icons" alt="${item}" />`
       })
       table += '</td></tr>'
       table += '<tr><td>'
-      p_merged[key].hazards.forEach((item, index) => {
+      p_merged[i].hazards.forEach((item, index) => {
         table += `<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/${item}.png" class="rounded practices_img_icons" alt="${item}" />`
       })
       table += '</td></tr></table></td>'
       table += '<td class="col-4"><table class="table borderless">'
+
+      const key = p_merged[i].csa_cat
       const barrier1Keys = Object.keys(p_merged_barriers[key])
       barrier1Keys.forEach((item, index) => {
         table += `<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/${item}.png" class="rounded practices_img_icons" alt="' + ${item} + '" /></td>`
