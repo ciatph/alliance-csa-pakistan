@@ -27,6 +27,9 @@ let impactsData
 // practices data
 let practicesData
 
+// risks data
+let risksData
+
 // Global function
 jQuery(document).ready(async function () {
   $('[data-toggle="tooltip"]').tooltip()
@@ -84,6 +87,11 @@ jQuery(document).ready(async function () {
   // Sub tab - Practices aggregation dropdown menu
   $('#cbo_practices_agg').on('change', function (e) {
     renderPractices(e.target.value)
+  })
+
+  // Sub tab - Climate Risks aggregation dropdown menu
+  $('#cbo_risks_agg').on('change', function (e) {
+    renderClimateRisks(e.target.value)
   })
 })
 
@@ -194,7 +202,12 @@ async function click_tab (tab_selected) {
 
     // Load the impacts data
     if (!impactsData) {
-      impactsData = await loadD3CSVData('/impacts/impacts.csv')
+      try {
+        impactsData = await loadD3CSVData('/impacts/impacts.csv')
+      } catch (err) {
+        console.error(err.message)
+        return
+      }
     }
 
     renderClimateImpacts()
@@ -202,11 +215,34 @@ async function click_tab (tab_selected) {
     $('#title').html('Climate risk')
     $('#description').html('This tab presents a risk matrix generated through responses from agricultural experts in the districts on the frequency and severity of major hazards.')
     $('#risk').removeClass('d-none')
-    d3.csv(`${baseDataURL}data/risk/risk.csv`, function (error, data) {
-      if (error) { console.log(error) }
-      const risk_d = data.filter(function (item) { return item.district === district })
-      risk_fill(risk_d)
-    })
+
+    // Display the selected district and province names
+    if (district && province) {
+      const options = {
+        dist: `District - ${district ?? ''}`,
+        prov: `Province - ${province ?? ''}`,
+        nati: `National - ${district ? 'Pakistan' : ''}`
+      }
+
+      const select = $('#cbo_risks_agg')
+      select.empty()
+      $.each(Object.keys(options), function () {
+        select.append($('<option />').val(this).text(options[this]))
+      })
+      select.val('dist')
+    }
+
+    // Load the impacts data
+    if (!risksData) {
+      try {
+        risksData = await loadD3CSVData('/risk/risk.csv')
+      } catch (err) {
+        console.error(err.message)
+        return
+      }
+    }
+
+    renderClimateRisks()
   } else if (tab === 'practices') {
     $('#title').html('Practices')
     $('#description').html('This tab presents the types of CSA practices prioritised by experts in the district, along with the areas were they have an impact, the hazards they address, and the barriers to adoption. the practices can be filtered by the commodity they look at, the areas where they have an impact or the types of hazards they address, allowing decision makers to identify practices that address certain priority issues.')
@@ -230,7 +266,12 @@ async function click_tab (tab_selected) {
 
     // Load the impacts data
     if (!practicesData) {
-      practicesData = await loadD3CSVData('/practices/practices.csv')
+      try {
+        practicesData = await loadD3CSVData('/practices/practices.csv')
+      } catch (err) {
+        console.error(err.message)
+        return
+      }
     }
 
     renderPractices()
@@ -254,7 +295,11 @@ async function click_tab (tab_selected) {
   }).addTo(map)
 
   if (!mapData) {
-    mapData = await loadMapData()
+    try {
+      mapData = await loadMapData()
+    } catch (err) {
+      console.log(err.message)
+    }
     console.log('---map data loaded!')
 
     // Pre-load enablers data to use its province and district names list as reference for site selection
@@ -288,7 +333,8 @@ async function click_tab (tab_selected) {
       const layer_url = `${baseDataURL}data/maps/pakistan_map.json`
       mapJSON = await $.getJSON(layer_url)
     } catch (err) {
-      console.log(err.message)
+      console.error(err.message)
+      return
     }
   }
 
@@ -903,11 +949,10 @@ function impact_fill_table (crop, hazard, aggLevel) {
     // Severity table
     table = '<table class="table table-striped table-sm">'
     for (let i = 0; i < _severity.length; i++) {
+      const dists = (aggLevel === 'dist') ? '' : `<div class="text-label-info">Districts: ${aggCountDistricts[_severity[i]].toString().split(',').join(', ')}</div>`
       table = table + `<tr>
         <th>Severity</th>
-        <td>${_severity[i]}
-          <div class="text-label-info">Districts: ${aggCountDistricts[_severity[i]].toString().split(',').join(', ')}</div>
-        </td>
+        <td>${_severity[i]} ${dists}</td>
         <th>Count</th>
         <td>${aggCount[_severity[i]]}</td>
         </tr>`
@@ -1060,18 +1105,47 @@ function practices_fill (crop, hazard, level) {
 /**
  * Function which fill table of risk for climate risk
  */
-function risk_fill (data) {
+function risk_fill (data, level = 'dist') {
   for (let i = 1; i < 5; i++) {
     for (let j = 1; j < 5; j++) {
       $('#r' + i + '-' + j).html('')
     }
   }
-  data.forEach(element => {
-    const key = '#r' + element.frequency + '-' + element.severity
-    if (element.severity !== '#N/A' && element.frequency !== '#N/A') {
-      $(key).html($(key).html() + '- ' + element.hazard + '<br />')
+
+  if (level === 'dist') {
+    data.forEach(element => {
+      const key = '#r' + element.frequency + '-' + element.severity
+      if (element.severity !== '#N/A' && element.frequency !== '#N/A') {
+        $(key).html($(key).html() + '- ' + element.hazard + '<br />')
+      }
+    })
+  } else {
+    // Count the risks for provincial & nat'l aggregation lvls
+    const aggRisks = risk_d.reduce((acc, item) => {
+      if (item.severity !== '#N/A' && item.frequency !== '#N/A') {
+        const key = `#r${item.frequency}-${item.severity}`
+        if (acc[key] === undefined) {
+          acc[key] = { [item.hazard]: 1 }
+        } else {
+          if (acc[key][item.hazard] === undefined) {
+            acc[key][item.hazard] = 1
+          } else {
+            acc[key][item.hazard] += 1
+          }
+        }
+      }
+      return { ...acc }
+    }, {})
+
+    for (const key in aggRisks) {
+      let text = ''
+      for (const risk in aggRisks[key]) {
+        const cnt = (aggRisks[key][risk] > 1) ? `(${aggRisks[key][risk]})` : ''
+        text += `- ${risk} ${cnt}<br>`
+      }
+      $(key).html(text)
     }
-  })
+  }
 }
 
 function enablers_load () {
@@ -1107,6 +1181,7 @@ function enablers_fill (data) {
   // table = table + '</table>';
   $('#enablers_table  > tbody').html(table)
 }
+
 /**
  * Function for each feature into the map
  */
@@ -1318,6 +1393,27 @@ async function renderPractices (level = 'dist') {
 
   // Default fill
   practices_fill(crop_val, cbo_practices_hazard.val(), level)
+}
+
+/**
+ * Function to re-render the climate risks data based on selected aggregation.
+ */
+async function renderClimateRisks (level = 'dist') {
+  const aggLevel = getAggregationLevel(level)
+  console.log(aggLevel)
+
+  // Filter data by province or district
+  if (aggLevel.level && aggLevel.value) {
+    // Note: Usual 'province' column is named 'providence' on CSV file
+    const renameLvl = (aggLevel.level === 'province') ? 'providence' : aggLevel.level
+    risk_d = risksData.filter(function (item) { return item[renameLvl] === aggLevel.value })
+  } else {
+    // No filters for 'national'
+    risk_d = risksData
+  }
+
+  // Default fill
+  risk_fill(risk_d, level)
 }
 
 /**

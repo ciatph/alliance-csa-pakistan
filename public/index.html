@@ -550,6 +550,21 @@
 
             <!-- Start Risk -->
             <div id="risk" class="tab_layout">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <div class="btn-toolbar mb-12 mb-md-0">
+                        <div class="btn-group mr-2">
+                            <label class="form-inline">
+                                Select level of aggregation: &nbsp; &nbsp;
+                                <select id="cbo_risks_agg" class="form-control form-control-lg" onchange="risks_fill()">
+                                    <option value="dist">Districts</option>
+                                    <option value="prov">Province</option>
+                                    <option value="nati">National</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table id="risk_table" class="table  table-sm">
                         <tr>
