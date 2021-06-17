@@ -217,6 +217,7 @@
                     <div class="tab-pane fade show active" id="site_map_content" role="tabpanel"
                         aria-labelledby="site_map_tab">
                         <div id="map" style="height: 500px; width: 100%;"></div>
+                        <!--
                         <div class="btn-group btn-group-toggle aggregation_select" data-toggle="buttons">
                             <label class="btn btn-secondary active">
                                 <input type="radio" name="options" id="site_district" autocomplete="off" checked> Districts
@@ -227,12 +228,12 @@
                             <label class="btn btn-secondary">
                                 <input type="radio" name="options" id="site_national" autocomplete="off"> National
                             </label>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="tab-pane fade" id="site_map_names_content" role="tabpanel" aria-labelledby="site_map_names_tab">
                         <div class="row">
                             <div class="col-lg-12">
-                                <div id="site_provinces">
+                                <div id="site_provinces_accordion">
                                 </div>
                             </div>
                         </div>
@@ -291,6 +292,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <h3>Cropping calendar</h3>
+                        <label id="mngt_practice_label">&nbsp;</label>
                         <table class="table table-sm">
                             <tr>
                                 <td class="crop_c_Breeding">&nbsp;</td>
@@ -330,6 +332,9 @@
                 <div class="row">
                     <div class="col-md-12">
                         <h3>Hazard calendar</h3>
+                        <label><strong>Scale</strong></label>
+                        <div id="cropping_hazard_legend"></div>
+                        <br />
                         <table id="cropping_hazard_table" class="table table-striped table-sm">
                             <thead>
                                 <tr>
@@ -524,8 +529,6 @@
                 <div class="row">
                     <div id="impacts_severity" class="col-md-12">
                     </div>
-                    <div id="impacts_severity_districts" class="col-md-12 text-label-info">
-                    </div>
                 </div>
                 <div class="table-responsive">
                     <table id="impacts_table" class="table table-striped table-sm">
@@ -547,6 +550,21 @@
 
             <!-- Start Risk -->
             <div id="risk" class="tab_layout">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <div class="btn-toolbar mb-12 mb-md-0">
+                        <div class="btn-group mr-2">
+                            <label class="form-inline">
+                                Select level of aggregation: &nbsp; &nbsp;
+                                <select id="cbo_risks_agg" class="form-control form-control-lg" onchange="risks_fill()">
+                                    <option value="dist">Districts</option>
+                                    <option value="prov">Province</option>
+                                    <option value="nati">National</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table id="risk_table" class="table  table-sm">
                         <tr>
