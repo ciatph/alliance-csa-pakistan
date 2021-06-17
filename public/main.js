@@ -415,8 +415,6 @@ async function cropping_calendar_hazard (crop_c, hazard_c) {
       const mngtPractice = (cell['management Practices'] !== '') ? cell['management Practices'] : '&nbsp;'
       table = table + '<td id="crop_c_' + i + '" class="crop_c_' + cell.value + '" ' +
                         'data-toggle="tooltip" ' +
-                        'onmouseover="$(\'#mngt_practice_label\').html(\'' + mngtPractice + '\')" ' +
-                        'onmouseout="$(\'#mngt_practice_label\').html()" ' +
                         // 'data-position="bottom" '  +
                         'title="' + mngtPractice + '"></td>'
       // 'data-tooltip="' + cell.practices + '"></td>';
