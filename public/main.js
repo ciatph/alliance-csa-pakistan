@@ -1068,7 +1068,7 @@ function practices_fill (crop, hazard, level) {
     }, {})
 
     // Sort (store results in an Array)
-    p_merged = Object.values(test).sort((a, b) => b.frequency - a.frequency)
+    p_merged = Object.values(p_merged).sort((a, b) => b.frequency - a.frequency)
 
     let table = '<table class="table table-bordered table-sm">'
     for (let i = 0; i < p_merged.length; i += 1) {
