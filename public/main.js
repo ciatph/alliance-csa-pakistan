@@ -415,8 +415,6 @@ async function cropping_calendar_hazard (crop_c, hazard_c) {
       const mngtPractice = (cell['management Practices'] !== '') ? cell['management Practices'] : '&nbsp;'
       table = table + '<td id="crop_c_' + i + '" class="crop_c_' + cell.value + '" ' +
                         'data-toggle="tooltip" ' +
-                        'onmouseover="$(\'#mngt_practice_label\').html(\'' + mngtPractice + '\')" ' +
-                        'onmouseout="$(\'#mngt_practice_label\').html()" ' +
                         // 'data-position="bottom" '  +
                         'title="' + mngtPractice + '"></td>'
       // 'data-tooltip="' + cell.practices + '"></td>';
@@ -432,10 +430,10 @@ async function cropping_calendar_hazard (crop_c, hazard_c) {
     const scale = await loadD3CSVData('/cropping/scale_legend.csv')
     test = scale
     const legend = scale.reduce((acc, item) => {
-      acc += `<strong>${item.value}</strong>: ${item.legend}<br>`
+      acc += `<strong>${item.value}</strong>: ${item.legend}, `
       return acc
     }, '')
-    $('#cropping_hazard_legend').html(legend)
+    $('#cropping_hazard_legend').html(legend.substr(0, legend.length - 2))
   } catch (err) {
     console.error(err.messgae)
   }
@@ -480,6 +478,7 @@ function climate_load () {
         const indicators = d3.map(climate_indicator_d, function (d) { return d.vars }).keys()
         const cbo_climate_indicator = $('#cbo_climate_indicator')
         cbo_climate_indicator.empty()
+        cbo_climate_indicator.off('change')
         $.each(indicators, function () {
           cbo_climate_indicator.append($('<option />').val(this).text(this.toUpperCase()))
         })
@@ -487,6 +486,7 @@ function climate_load () {
         const season = d3.map(climate_indicator_d, function (d) { return d.season }).keys()
         const cbo_climate_season = $('#cbo_climate_season')
         cbo_climate_season.empty()
+        cbo_climate_season.off('change')
         $.each(season, function () {
           cbo_climate_season.append($('<option />').val(this).text(this))
         })
@@ -729,6 +729,14 @@ function climate_indicator_fill (indicator, season) {
   $('#climate_indicator_map').html('')
   // Set global vars
   climate_indicator_let = climate_indicator_var = indicator
+  const indicator_labels = {
+    CDD: 'Days',
+    ndws: 'Days',
+    IRR: 'Value',
+    P5D: 'Value',
+    NT35: 'Days',
+    P95: 'Value'
+  }
 
   const i_i = climate_indicator_d.filter(function (d) { return d.season === season && d.vars === indicator })
   const i_p = [{
@@ -782,7 +790,7 @@ function climate_indicator_fill (indicator, season) {
     // .tickFormat(d3.format('.0f'))
 
     ind_p.yAxis // Chart y-axis settings
-      .axisLabel('Value')
+      .axisLabel(indicator_labels[indicator])
       .tickFormat(d3.format('.0f'))
 
     d3.select('#climate_indicator_plot svg') // Select the <svg> element you want to render the chart in.
@@ -818,7 +826,7 @@ function climate_indicator_fill (indicator, season) {
   const legend = L.control({ position: 'topright' })
   legend.onAdd = function (map) {
     const div = L.DomUtil.create('div', 'info legend')
-    div.innerHTML += '<h4>Scale (' + climate_indicator_let + ')</h4>' +
+    div.innerHTML += '<h4>Scale (' + indicator_labels[climate_indicator_let] + ')</h4>' +
                     '<div id="map_scale"><svg></svg></div>'
     return div
   }
@@ -1012,14 +1020,15 @@ function practices_fill (crop, hazard, level) {
     // Filtering for provincial and nat'l agg levels
     const records = practices_d.filter(function (item) { return (hazard === 'All' ? true : item.hazard === hazard || item.hazard_1 === hazard || item.hazard_2 === hazard || item.hazard_3 === hazard) })
 
-    // Get unique categories by 'CSA Category'
-    const p_merged = records.reduce((acc, item) => {
+    // Get unique categories by 'CSA Category' (store results in an Object)
+    let p_merged = records.reduce((acc, item) => {
       if (acc[item['CSA Category']] === undefined) {
         acc[item['CSA Category']] = {
           frequency: 1,
           ranking: parseFloat(item.Ranking),
           indicators: [],
-          hazards: []
+          hazards: [],
+          csa_cat: item['CSA Category']
         }
       } else {
         // Sum frequency (count) and ranking
@@ -1067,29 +1076,33 @@ function practices_fill (crop, hazard, level) {
       }
       return { ...acc }
     }, {})
-    console.log(p_merged_barriers)
+
+    // Sort (store results in an Array)
+    p_merged = Object.values(p_merged).sort((a, b) => b.frequency - a.frequency)
 
     let table = '<table class="table table-bordered table-sm">'
-    for (const key in p_merged) {
+    for (let i = 0; i < p_merged.length; i += 1) {
       table += '<tr class="table-secondary d-flex">'
       table += `<td class="col-4">
-        <h4>${key}</h4>
+        <h4>${p_merged[i].csa_cat}</h4>
         <p>
-          <b>Frequency:</b> ${p_merged[key].frequency}<br>
-          <b>Avg. Ranking:</b> ${(p_merged[key].ranking / p_merged[key].frequency).toFixed(3)}
+          <b>Frequency:</b> ${p_merged[i].frequency}<br>
+          <b>Avg. Ranking:</b> ${(p_merged[i].ranking / p_merged[i].frequency).toFixed(3)}
         </p>
       </td>`
       table += '<td class="col-4"><table class="table borderless"><tr><td>'
-      p_merged[key].indicators.forEach((item, index) => {
+      p_merged[i].indicators.forEach((item, index) => {
         table += `<img src="https://ciat-dapa.github.io/pakistan_web/img/indicators/${item}.png" class="rounded practices_img_icons" alt="${item}" />`
       })
       table += '</td></tr>'
       table += '<tr><td>'
-      p_merged[key].hazards.forEach((item, index) => {
+      p_merged[i].hazards.forEach((item, index) => {
         table += `<img src="https://ciat-dapa.github.io/pakistan_web/img/hazards/${item}.png" class="rounded practices_img_icons" alt="${item}" />`
       })
       table += '</td></tr></table></td>'
       table += '<td class="col-4"><table class="table borderless">'
+
+      const key = p_merged[i].csa_cat
       const barrier1Keys = Object.keys(p_merged_barriers[key])
       barrier1Keys.forEach((item, index) => {
         table += `<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/${item}.png" class="rounded practices_img_icons" alt="' + ${item} + '" /></td>`
