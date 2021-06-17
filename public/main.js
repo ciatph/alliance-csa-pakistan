@@ -430,10 +430,10 @@ async function cropping_calendar_hazard (crop_c, hazard_c) {
     const scale = await loadD3CSVData('/cropping/scale_legend.csv')
     test = scale
     const legend = scale.reduce((acc, item) => {
-      acc += `<strong>${item.value}</strong>: ${item.legend}<br>`
+      acc += `<strong>${item.value}</strong>: ${item.legend}, `
       return acc
     }, '')
-    $('#cropping_hazard_legend').html(legend)
+    $('#cropping_hazard_legend').html(legend.substr(0, legend.length - 2))
   } catch (err) {
     console.error(err.messgae)
   }
