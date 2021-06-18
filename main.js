@@ -30,6 +30,9 @@ let practicesData
 // risks data
 let risksData
 
+// villages data
+let villagesData
+
 // Global function
 jQuery(document).ready(async function () {
   $('[data-toggle="tooltip"]').tooltip()
@@ -338,6 +341,13 @@ async function click_tab (tab_selected) {
     }
   }
 
+  // Load the villages names data
+  try {
+    villagesData = await loadD3CSVData('/maps/pakistan_villages.csv')
+  } catch (err) {
+    console.error(err.message)
+  }
+
   reloadMapLayer()
 }
 
@@ -507,22 +517,38 @@ function climate_load () {
 }
 
 /**
+ * Function that displays a list of villages from a selected district
+ */
+function showVillages (prov, dist, targetVillage) {
+  const villages = villagesData
+    .filter(x => x.province === prov && x.district === dist)
+    .map(x => x.village)
+    .toString().split(',').join(', ')
+
+  $(`${targetVillage}_selected`).html(dist)
+  $(targetVillage).html(villages)
+}
+
+/**
  * Function which displays the list of all provinces and villages on the site selection sub-tab
  */
 function site_fill () {
   if ($('#site_provinces_accordion').html().replaceAll(' ', '').length > 2) {
-    console.log('---skipping fill')
     return
   }
 
-  const geographicFilter = mapData
-    .filter(x => x.site === '1')
+  const geographicFilter = villagesData
     .reduce((acc, curr) => {
-      if (!acc[curr.NAME_1]) {
-        acc[curr.NAME_1] = [curr.NAME_3]
+      if (acc[curr.province] === undefined) {
+        acc[curr.province] = {
+          [curr.district]: [curr.village]
+        }
       } else {
-        if (!acc[curr.NAME_1].includes(curr.NAME_3)) {
-          acc[curr.NAME_1].push(curr.NAME_3)
+        if (acc[curr.province][curr.district] === undefined) {
+          acc[curr.province][curr.district] = []
+        }
+        if (!acc[curr.province][curr.district].includes(curr.village)) {
+          acc[curr.province][curr.district].push(curr.village)
         }
       }
       return { ...acc }
@@ -531,23 +557,38 @@ function site_fill () {
   const provinces = Object.keys(geographicFilter)
   let str = ''
   for (let i = 0; i < provinces.length; i += 1) {
-    const districts = geographicFilter[provinces[i]].reduce((acc, item) => {
-      acc += `<div>${item}</div>`
+    const provId = provinces[i].replaceAll(' ', '')
+    const districts = Object.keys(geographicFilter[provinces[i]]).reduce((acc, item) => {
+      acc += `<a href="#collapse_${provId}" onclick="showVillages('${provinces[i]}', '${item}', '#prov_${provId}')">${item}</a><br>`
       return acc
     }, '')
 
+    const defaultDistrict = Object.keys(geographicFilter[provinces[i]])[0]
+    const defaultVillages = Object.values(geographicFilter[provinces[i]])[0].toString().split(',').join(', ')
+
     str += `<div class="card">
-      <div class="card-header" id="heading_${provinces[i]}">
+      <div class="card-header" id="heading_${provId}">
         <h5 class="mb-0">
-          <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_${provinces[i]}" aria-expanded="true" aria-controls="collapse_${provinces[i]}">
-            ${provinces[i]}
+          <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_${provId}" aria-expanded="true" aria-controls="collapse_${provId}">
+            ${provId}
           </button>
         </h5>
       </div>
 
-      <div id="collapse_${provinces[i]}" class="collapse show" aria-labelledby="heading_${provinces[i]}" data-parent="#site_provinces_accordion">
+      <div id="collapse_${provId}" class="collapse show" aria-labelledby="heading_${provId}" data-parent="#site_provinces_accordion">
         <div class="card-body">
-          ${districts}
+          <div class="row">
+            <div class="col-md-3">
+              <h5>Districts</h5>
+              ${districts}
+            </div>
+            <div class="col-md-9">
+              <h5>Villages (<span id="prov_${provId}_selected">${defaultDistrict}</span>)</h5>
+              <div id="prov_${provId}">
+                ${defaultVillages}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>`
@@ -732,10 +773,10 @@ function climate_indicator_fill (indicator, season) {
   const indicator_labels = {
     CDD: 'Days',
     ndws: 'Days',
-    IRR: 'Value',
-    P5D: 'Value',
+    IRR: 'mm',
+    P5D: 'mm/day',
     NT35: 'Days',
-    P95: 'Value'
+    P95: 'mm/day'
   }
 
   const i_i = climate_indicator_d.filter(function (d) { return d.season === season && d.vars === indicator })
