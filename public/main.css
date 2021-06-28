@@ -177,3 +177,7 @@ table.table-bordered>tbody>tr>td {
 .districts_list {
   cursor: pointer;
 }
+
+.icon_finance_market img {
+  width: 50%;
+}
