@@ -140,6 +140,9 @@ async function click_tab (tab_selected) {
     $('#title').html('Site selection')
     $('#description').html('Please use the below map to select the region (National, Province, District) you would like to focus on. You can also see in the project site tab a list of all districts and villages included in the study.')
     $('#site').removeClass('d-none')
+    if (map) {
+      map.invalidateSize()
+    }
     site_fill()
   } else if (tab === 'cropping') {
     $('#title').html('Cropping system')
@@ -285,17 +288,22 @@ async function click_tab (tab_selected) {
     enablers_load()
   }
 
-  if (map) {
-    map.off()
-    map.remove()
+  if (!map) {
+    map = L.map('map').setView([29.8724623, 66.1822339], 5)
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map)
+
+    map.on('load', function () {
+      setTimeout(() => {
+        console.log('---resising map...')
+        map.invalidateSize(true)
+      }, 100)
+    })
+
+    mapLayerGroup.addTo(map)
   }
-
-  map = L.map('map').setView([29.8724623, 66.1822339], 5)
-  mapLayerGroup.addTo(map)
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map)
 
   if (!mapData) {
     try {
@@ -303,7 +311,6 @@ async function click_tab (tab_selected) {
     } catch (err) {
       console.log(err.message)
     }
-    console.log('---map data loaded!')
 
     // Pre-load enablers data to use its province and district names list as reference for site selection
     try {
@@ -339,13 +346,13 @@ async function click_tab (tab_selected) {
       console.error(err.message)
       return
     }
-  }
 
-  // Load the villages names data
-  try {
-    villagesData = await loadD3CSVData('/maps/pakistan_villages.csv')
-  } catch (err) {
-    console.error(err.message)
+    // Load the villages names data
+    try {
+      villagesData = await loadD3CSVData('/maps/pakistan_villages.csv')
+    } catch (err) {
+      console.error(err.message)
+    }
   }
 
   reloadMapLayer()
@@ -470,7 +477,7 @@ function climate_load () {
   d3.csv(`${baseDataURL}data/climate/climatology.csv`, function (error, data) {
     if (error) { console.log(error) }
     const climatology = data.filter(function (item) { return item.district === district })
-    d3.csv(`${baseDataURL}data/climate/gcm.csv`, function (error, data2) {
+    d3.csv(`${baseDataURL}data/climate/gcm_new.csv`, function (error, data2) {
       if (error) { console.log(error) }
       const gcm = data2.filter(function (item) { return item.district === district })
 
@@ -559,7 +566,9 @@ function site_fill () {
   for (let i = 0; i < provinces.length; i += 1) {
     const provId = provinces[i].replaceAll(' ', '')
     const districts = Object.keys(geographicFilter[provinces[i]]).reduce((acc, item) => {
-      acc += `<a href="#collapse_${provId}" onclick="showVillages('${provinces[i]}', '${item}', '#prov_${provId}')">${item}</a><br>`
+      const checked = (acc === '') ? 'checked="checked"' : ''
+      acc += `<input type="radio" name="collapse_${provId}"
+        onclick="showVillages('${provinces[i]}', '${item}', '#prov_${provId}')" ${checked}>&nbsp; ${item}<br>`
       return acc
     }, '')
 
@@ -578,7 +587,7 @@ function site_fill () {
       <div id="collapse_${provId}" class="collapse show" aria-labelledby="heading_${provId}" data-parent="#site_provinces_accordion">
         <div class="card-body">
           <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-3 districts_list">
               <h5>Districts</h5>
               ${districts}
             </div>
@@ -694,26 +703,67 @@ function climate_fill (climatology, gcm) {
   })
 
   // GCM
-  const g_p = [{
-    values: gcm.map(function (item) {
-      return {
+  const g_p = [
+    {
+      values: gcm.map((item) => ({
         x: parseInt(item.year),
-        y: parseFloat(item.prec)
-      }
-    }), // values - represents the array of {x,y} data points
-    key: 'Precipitation', // key  - the name of the series.
-    color: '#596dad' // color - optional: choose your own line color.
-  }]
-  const g_t = [{
-    values: gcm.map(function (item) {
-      return {
+        y: parseFloat((parseFloat(item.pmean) + parseFloat(item.pstd)).toFixed(2))
+      })),
+      key: 'a',
+      color: '#9dc3e6'
+    },
+    {
+      values: gcm.map(function (item) {
+        return {
+          x: parseInt(item.year),
+          y: parseFloat(item.pmean)
+        }
+      }), // values - represents the array of {x,y} data points
+      key: 'Precipitation mean', // key  - the name of the series.
+      color: '#2e75b6' // color - optional: choose your own line color.
+    },
+    {
+      values: gcm.map((item) => ({
         x: parseInt(item.year),
-        y: parseFloat(item.tmean)
-      }
-    }), // values - represents the array of {x,y} data points
-    key: 'Temperature', // key  - the name of the series.
-    color: '#e34147' // color - optional: choose your own line color.
-  }]
+        y: parseFloat((parseFloat(item.pmean) - parseFloat(item.pstd)).toFixed(2))
+      })),
+      key: 'b',
+      color: '#9dc3e6'
+    }
+  ]
+
+  const g_t = [
+    {
+      values: gcm.map((item) => ({
+        x: parseInt(item.year),
+        y: parseFloat((parseFloat(item.tmean) + parseFloat(item.tstd)).toFixed(2))
+      })),
+      key: 'a',
+      color: '#f4b183'
+    },
+    {
+      values: gcm.map(function (item) {
+        return {
+          x: parseInt(item.year),
+          y: parseFloat(item.tmean)
+        }
+      }), // values - represents the array of {x,y} data points
+      key: 'Temperature mean', // key  - the name of the series.
+      color: '#c55a11' // color - optional: choose your own line color.
+    },
+    {
+      values: gcm.map((item) => ({
+        x: parseInt(item.year),
+        y: parseFloat((parseFloat(item.tmean) - parseFloat(item.tstd)).toFixed(2))
+      })),
+      key: 'b',
+      color: '#f4b183'
+    }
+  ]
+
+  const years = gcm
+    .map(x => x.year)
+    .filter((x, i, a) => a.indexOf(x) === i)
 
   nv.addGraph(function () {
     const gcm_pre = nv.models.lineChart()
@@ -722,11 +772,11 @@ function climate_fill (climatology, gcm) {
 
     gcm_pre.xAxis // Chart x-axis settings
       .axisLabel('Year')
-    // .tickFormat(d3.format('.0f'))
+      .tickValues(years)
 
     gcm_pre.yAxis // Chart y-axis settings
       .axisLabel('Precipitation (mm)')
-      .tickFormat(d3.format('.0f'))
+      .tickFormat(d3.format('.1f'))
 
     d3.select('#gcm_prec_plot svg') // Select the <svg> element you want to render the chart in.
       .datum(g_p) // Populate the <svg> element with chart data...
@@ -744,11 +794,12 @@ function climate_fill (climatology, gcm) {
 
     gcm_tem.xAxis // Chart x-axis settings
       .axisLabel('Year')
+      .tickValues(years)
     // .tickFormat(d3.format('.0f'))
 
     gcm_tem.yAxis // Chart y-axis settings
       .axisLabel('Temperature (°C)')
-      .tickFormat(d3.format('.0f'))
+      .tickFormat(d3.format('.1f'))
 
     d3.select('#gcm_temp_plot svg') // Select the <svg> element you want to render the chart in.
       .datum(g_t) // Populate the <svg> element with chart data...
@@ -867,8 +918,9 @@ function climate_indicator_fill (indicator, season) {
   const legend = L.control({ position: 'topright' })
   legend.onAdd = function (map) {
     const div = L.DomUtil.create('div', 'info legend')
-    div.innerHTML += '<h4>Scale (' + indicator_labels[climate_indicator_let] + ')</h4>' +
-                    '<div id="map_scale"><svg></svg></div>'
+    div.innerHTML += '<h4>Scale (' + climate_indicator_let + ')</h4>' +
+                    '<div id="map_scale"><svg></svg><span>hello</span></div>' +
+                    '<label>' + indicator_labels[climate_indicator_let] + '</label>'
     return div
   }
   legend.addTo(map_i)

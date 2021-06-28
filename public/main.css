@@ -173,3 +173,7 @@ table.table-bordered>tbody>tr>td {
 #mngt_practice_label {
   color: gray;
 }
+
+.districts_list {
+  cursor: pointer;
+}
