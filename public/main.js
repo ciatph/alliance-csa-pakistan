@@ -588,7 +588,7 @@ async function site_fill () {
       <div id="collapse_${provId}" class="collapse show" aria-labelledby="heading_${provId}" data-parent="#site_provinces_accordion">
         <div class="card-body">
           <div class="row">
-            <div class="col-md-3 districts_list">
+            <div class="col-md-3">
               <h5>Districts</h5>
               ${districts}
             </div>
@@ -1401,6 +1401,10 @@ const selectSiteLevel = (level) => {
 async function renderClimateImpacts (level = 'dist') {
   const aggLevel = getAggregationLevel(level)
 
+  if (!aggLevel) {
+    return
+  }
+
   // Filter data by province or district
   if (aggLevel.level && aggLevel.value) {
     hazard_d = impactsData.filter(function (item) { return item[aggLevel.level] === aggLevel.value })
@@ -1451,6 +1455,10 @@ async function renderClimateImpacts (level = 'dist') {
 async function renderPractices (level = 'dist') {
   const aggLevel = getAggregationLevel(level)
   let cbo_practices_crop
+
+  if (!aggLevel) {
+    return
+  }
 
   // Filter data by province or district
   if (aggLevel.level && aggLevel.value) {
@@ -1511,6 +1519,10 @@ async function renderPractices (level = 'dist') {
 async function renderClimateRisks (level = 'dist') {
   const aggLevel = getAggregationLevel(level)
   console.log(aggLevel)
+
+  if (!aggLevel) {
+    return
+  }
 
   // Filter data by province or district
   if (aggLevel.level && aggLevel.value) {

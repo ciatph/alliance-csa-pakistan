@@ -174,10 +174,6 @@ table.table-bordered>tbody>tr>td {
   color: gray;
 }
 
-.districts_list {
-  cursor: pointer;
-}
-
 .icon_finance_market img {
   width: 50%;
 }
