@@ -346,13 +346,6 @@ async function click_tab (tab_selected) {
       console.error(err.message)
       return
     }
-
-    // Load the villages names data
-    try {
-      villagesData = await loadD3CSVData('/maps/pakistan_villages.csv')
-    } catch (err) {
-      console.error(err.message)
-    }
   }
 
   reloadMapLayer()
@@ -539,7 +532,16 @@ function showVillages (prov, dist, targetVillage) {
 /**
  * Function which displays the list of all provinces and villages on the site selection sub-tab
  */
-function site_fill () {
+async function site_fill () {
+  if (!villagesData) {
+    // Load the villages names data
+    try {
+      villagesData = await loadD3CSVData('/maps/pakistan_villages.csv')
+    } catch (err) {
+      console.error(err.message)
+    }
+  }
+
   if ($('#site_provinces_accordion').html().replaceAll(' ', '').length > 2) {
     return
   }
