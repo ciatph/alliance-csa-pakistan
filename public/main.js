@@ -303,7 +303,6 @@ async function click_tab (tab_selected) {
 
     map.on('load', function () {
       setTimeout(() => {
-        console.log('---resising map...')
         map.invalidateSize(true)
       }, 100)
     })
@@ -1113,11 +1112,13 @@ function practices_fill (crop, hazard, level) {
       table = table + '<td class="col-4"><table class="table borderless">'
       if (records[i].barrier_1 !== '') {
         table = table + '<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/' + records[i].barrier_1 + '.png" class="rounded practices_img_icons" alt="' + records[i].barrier_1 + '" /></td>' +
-                          '<td>' + records[i].b1_exp + '</td></tr>'
+                          '<td><strong>' + records[i].barrier_1 + '</strong> - ' +
+                          records[i].b1_exp + '</td></tr>'
       }
       if (records[i].barrier_2 !== '') {
         table = table + '<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/' + records[i].barrier_2 + '.png" class="rounded practices_img_icons" alt="' + records[i].barrier_2 + '" /></td>' +
-                          '<td>' + records[i].b2_exp + '</td></tr>'
+                        '<td><strong>' + records[i].barrier_2 + '</strong> - ' +
+                        records[i].b2_exp + '</td></tr>'
       }
       table = table + '</table></td>'
       table = table + '</tr>'
@@ -1214,7 +1215,7 @@ function practices_fill (crop, hazard, level) {
       const barrier1Keys = Object.keys(p_merged_barriers[key])
       barrier1Keys.forEach((item, index) => {
         table += `<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/${item}.png" class="rounded practices_img_icons" alt="' + ${item} + '" /></td>`
-        table += `<td>${p_merged_barriers[key][item].toString().split(',').join(', ')}</td></tr>`
+        table += `<td><strong>${item}</strong> - ${p_merged_barriers[key][item].toString().split(',').join(', ')}</td></tr>`
       })
       table = table + '</table></td>'
       table = table + '</tr>'
