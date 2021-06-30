@@ -1267,7 +1267,7 @@ function enablers_load () {
 
   let enablers = null
   if (type_agg === 'dist') { enablers = data.filter(function (item) { return item.district === district }) } else if (type_agg === 'prov') { enablers = data.filter(function (item) { return item.province === province }) } else { enablers = data }
-  enablers = enablers.sort((a, b) => d3.descending(parseFloat(a.rank), parseFloat(b.rank)))
+  enablers = enablers.sort((a, b) => d3.ascending(parseFloat(a.rank), parseFloat(b.rank)))
   // enablers = data;
   // Default fill
   enablers_fill(enablers)
