@@ -421,8 +421,15 @@ async function cropping_calendar_hazard (crop_c, hazard_c) {
     table = table + '<td>' + value + '</td>'
     $.each(months, function (i, v) {
       const cell = crop_c.filter(function (d) { return d.crop_livestock === value && d.month === v })[0]
-      const mngtPractice = (cell['management Practices'] !== '') ? cell['management Practices'] : '&nbsp;'
-      table = table + '<td id="crop_c_' + i + '" class="crop_c_' + cell.value + '" ' +
+      let mngtPractice = 'n/a'
+      let val = 'n/a'
+
+      if (cell) {
+        mngtPractice = (cell['management Practices'] !== '') ? cell['management Practices'] : '&nbsp;'
+        val = cell.value
+      }
+
+      table = table + '<td id="crop_c_' + i + '" class="crop_c_' + val + '" ' +
                         'data-toggle="tooltip" ' +
                         // 'data-position="bottom" '  +
                         'title="' + mngtPractice + '"></td>'
