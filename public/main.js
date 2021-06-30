@@ -1214,7 +1214,8 @@ function practices_fill (crop, hazard, level) {
       const key = p_merged[i].csa_cat
       const barrier1Keys = Object.keys(p_merged_barriers[key])
       barrier1Keys.forEach((item, index) => {
-        table += `<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/${item}.png" class="rounded practices_img_icons" alt="' + ${item} + '" /></td>`
+        const icon = (item === 'Social/Cultural') ? 'Labour' : item
+        table += `<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/${icon}.png" class="rounded practices_img_icons" alt="' + ${item} + '" /></td>`
         table += `<td><strong>${item}</strong> - ${p_merged_barriers[key][item].toString().split(',').join(', ')}</td></tr>`
       })
       table = table + '</table></td>'
