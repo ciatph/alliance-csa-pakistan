@@ -95,6 +95,13 @@ jQuery(document).ready(async function () {
   $('#cbo_risks_agg').on('change', function (e) {
     renderClimateRisks(e.target.value)
   })
+
+  // Reset the map tiles display
+  $('#site_map_tab').click(function (e) {
+    setTimeout(() => {
+      map.invalidateSize()
+    }, 1000)
+  })
 })
 
 // Parameters
