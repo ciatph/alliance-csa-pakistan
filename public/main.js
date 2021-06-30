@@ -1279,9 +1279,9 @@ function enablers_fill (data) {
   table = ''
   $('#enablers_table  > tbody').html(table)
   for (const item in data) {
-    const icon = (data[item].type !== 'Finance/ Market')
-      ? `<img src="./img/enablers/${data[item].type}.png" />`
-      : '<div class="icon_finance_market"><img src="./img/enablers/Finance.png" /><br /><img src="./img/enablers/Market.png" /></div'
+    const icon = (data[item].name === 'Price regulations')
+      ? '<img src="./img/enablers/Inst & Org.png" />'
+      : `<img src="./img/enablers/${data[item].type}.png" />`
     table = table + '<tr>'
     table += `<th>${icon}</th>`
     table = table + '<td>' + data[item].name + '</td>'
