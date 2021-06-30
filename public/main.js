@@ -710,7 +710,7 @@ function climate_fill (climatology, gcm) {
         x: parseInt(item.year),
         y: parseFloat((parseFloat(item.pmean) + parseFloat(item.pstd)).toFixed(2))
       })),
-      key: 'a',
+      key: 'H',
       color: '#9dc3e6'
     },
     {
@@ -728,7 +728,7 @@ function climate_fill (climatology, gcm) {
         x: parseInt(item.year),
         y: parseFloat((parseFloat(item.pmean) - parseFloat(item.pstd)).toFixed(2))
       })),
-      key: 'b',
+      key: 'L',
       color: '#9dc3e6'
     }
   ]
@@ -739,7 +739,7 @@ function climate_fill (climatology, gcm) {
         x: parseInt(item.year),
         y: parseFloat((parseFloat(item.tmean) + parseFloat(item.tstd)).toFixed(2))
       })),
-      key: 'a',
+      key: 'H',
       color: '#f4b183'
     },
     {
@@ -757,7 +757,7 @@ function climate_fill (climatology, gcm) {
         x: parseInt(item.year),
         y: parseFloat((parseFloat(item.tmean) - parseFloat(item.tstd)).toFixed(2))
       })),
-      key: 'b',
+      key: 'L',
       color: '#f4b183'
     }
   ]
