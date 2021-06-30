@@ -100,7 +100,7 @@ jQuery(document).ready(async function () {
   $('#site_map_tab').click(function (e) {
     setTimeout(() => {
       map.invalidateSize()
-    }, 1000)
+    }, 1500)
   })
 })
 
