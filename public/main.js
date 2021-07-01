@@ -450,7 +450,6 @@ async function cropping_calendar_hazard (crop_c, hazard_c) {
   // Hazard scale
   try {
     const scale = await loadD3CSVData('/cropping/scale_legend.csv')
-    test = scale
     const legend = scale.reduce((acc, item) => {
       acc += `<strong>${item.value}</strong>: ${item.legend}, `
       return acc
@@ -1023,7 +1022,6 @@ function impact_fill_table (crop, hazard, aggLevel) {
   let dists = []
   if (aggLevel !== 'dist') {
     dists = data.map(x => x.district).filter((x, i, a) => a.indexOf(x) === i)
-    console.log(dists)
   }
 
   // Fixing groups and Removing duplicates
@@ -1431,6 +1429,7 @@ async function renderClimateImpacts (level = 'dist') {
 
   // Filling the cbo controls with hazard and crops
   const crops_livestock = d3.map(hazard_d, function (d) { return d.crop_livestock }).keys()
+    .filter(x => x !== '')
   const cbo_impact_crop = $('#cbo_impact_crop')
   cbo_impact_crop.empty()
   cbo_impact_crop.off('change')
@@ -1441,6 +1440,7 @@ async function renderClimateImpacts (level = 'dist') {
   cbo_impact_crop.val('All')
 
   const hazard = d3.map(hazard_d, function (d) { return d.hazard }).keys()
+    .filter(x => x !== '')
   const cbo_impact_hazard = $('#cbo_impact_hazard')
   cbo_impact_hazard.empty()
   cbo_impact_hazard.off('change')
@@ -1487,6 +1487,9 @@ async function renderPractices (level = 'dist') {
   // Filling the cbo controls with hazard and crops
   if (level === 'dist') {
     const crop = Array.from(new Set(d3.map(practices_d, function (d) { return d.crop }).keys()))
+    if (crop.includes('')) {
+      crop.splice(crop.indexOf(''), 1)
+    }
     cbo_practices_crop = $('#cbo_practices_crop')
     cbo_practices_crop.empty()
     cbo_practices_crop.off('change')
@@ -1502,6 +1505,9 @@ async function renderPractices (level = 'dist') {
   }
 
   const hazard = Array.from(new Set(d3.map(practices_d, function (d) { return d.hazard }).keys()))
+  if (hazard.includes('')) {
+    hazard.splice(hazard.indexOf(''), 1)
+  }
   const cbo_practices_hazard = $('#cbo_practices_hazard')
   cbo_practices_hazard.empty()
   cbo_practices_hazard.off('change')
@@ -1516,12 +1522,10 @@ async function renderPractices (level = 'dist') {
 
   if (level === 'dist') {
     cbo_practices_crop.on('change', function (e) {
-      console.log('---crop changed')
       practices_fill(cbo_practices_crop.val(), cbo_practices_hazard.val(), level)
     })
   }
   cbo_practices_hazard.on('change', function (e) {
-    console.log('---hazard changed')
     practices_fill(crop_val, cbo_practices_hazard.val(), level)
   })
 
@@ -1534,7 +1538,6 @@ async function renderPractices (level = 'dist') {
  */
 async function renderClimateRisks (level = 'dist') {
   const aggLevel = getAggregationLevel(level)
-  console.log(aggLevel)
 
   if (!aggLevel) {
     return
