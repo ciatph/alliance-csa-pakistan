@@ -65,6 +65,14 @@ jQuery(document).ready(async function () {
     climate_load()
   })
 
+  // Reset the map tiles display
+  $('a[data-toggle="site_tab"]').on('shown.bs.tab', function (e) {
+    const { id } = e.target
+    if (id === 'site_map_tab') {
+      map.invalidateSize()
+    }
+  })
+
   // Set Site selection tab aggregation btn listeners
   $('#site_district').click(function (e) {
     siteMapAgg = 'district'
@@ -94,13 +102,6 @@ jQuery(document).ready(async function () {
   // Sub tab - Climate Risks aggregation dropdown menu
   $('#cbo_risks_agg').on('change', function (e) {
     renderClimateRisks(e.target.value)
-  })
-
-  // Reset the map tiles display
-  $('#site_map_tab').click(function (e) {
-    setTimeout(() => {
-      map.invalidateSize()
-    }, 1500)
   })
 })
 
@@ -157,7 +158,7 @@ async function click_tab (tab_selected) {
     d3.csv(`${baseDataURL}data/cropping/production.csv`, function (error, data) {
       if (error) { console.log(error) }
       const c_production = data.filter(function (item) { return item.district === district })
-      d3.csv(`${baseDataURL}data/cropping/cropping_calendar.csv`, function (error, data2) {
+      d3.csv(`${baseDataURL}data/cropping/cropping_calendar_20210701.csv`, function (error, data2) {
         if (error) { console.log(error) }
         crop_c_full = data2.filter(function (item) { return item.district === district })
         d3.csv(`${baseDataURL}data/cropping/hazard.csv`, function (error, data3) {
@@ -1486,10 +1487,7 @@ async function renderPractices (level = 'dist') {
 
   // Filling the cbo controls with hazard and crops
   if (level === 'dist') {
-    const crop = Array.from(new Set(d3.map(practices_d, function (d) { return d.crop }).keys()))
-    if (crop.includes('')) {
-      crop.splice(crop.indexOf(''), 1)
-    }
+    const crop = Array.from(new Set(d3.map(practices_d, function (d) { return d.crop }).keys())).filter(x => x !== '')
     cbo_practices_crop = $('#cbo_practices_crop')
     cbo_practices_crop.empty()
     cbo_practices_crop.off('change')
@@ -1504,10 +1502,7 @@ async function renderPractices (level = 'dist') {
     $('#cbo_practices_crop').css('display', 'none')
   }
 
-  const hazard = Array.from(new Set(d3.map(practices_d, function (d) { return d.hazard }).keys()))
-  if (hazard.includes('')) {
-    hazard.splice(hazard.indexOf(''), 1)
-  }
+  const hazard = Array.from(new Set(d3.map(practices_d, function (d) { return d.hazard }).keys())).filter(x => x !== '')
   const cbo_practices_hazard = $('#cbo_practices_hazard')
   cbo_practices_hazard.empty()
   cbo_practices_hazard.off('change')
