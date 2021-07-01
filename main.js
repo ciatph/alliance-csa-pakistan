@@ -95,6 +95,13 @@ jQuery(document).ready(async function () {
   $('#cbo_risks_agg').on('change', function (e) {
     renderClimateRisks(e.target.value)
   })
+
+  // Reset the map tiles display
+  $('#site_map_tab').click(function (e) {
+    setTimeout(() => {
+      map.invalidateSize()
+    }, 1500)
+  })
 })
 
 // Parameters
@@ -296,7 +303,6 @@ async function click_tab (tab_selected) {
 
     map.on('load', function () {
       setTimeout(() => {
-        console.log('---resising map...')
         map.invalidateSize(true)
       }, 100)
     })
@@ -421,8 +427,15 @@ async function cropping_calendar_hazard (crop_c, hazard_c) {
     table = table + '<td>' + value + '</td>'
     $.each(months, function (i, v) {
       const cell = crop_c.filter(function (d) { return d.crop_livestock === value && d.month === v })[0]
-      const mngtPractice = (cell['management Practices'] !== '') ? cell['management Practices'] : '&nbsp;'
-      table = table + '<td id="crop_c_' + i + '" class="crop_c_' + cell.value + '" ' +
+      let mngtPractice = 'n/a'
+      let val = 'n/a'
+
+      if (cell) {
+        mngtPractice = (cell['management Practices'] !== '') ? cell['management Practices'] : '&nbsp;'
+        val = cell.value
+      }
+
+      table = table + '<td id="crop_c_' + i + '" class="crop_c_' + val + '" ' +
                         'data-toggle="tooltip" ' +
                         // 'data-position="bottom" '  +
                         'title="' + mngtPractice + '"></td>'
@@ -710,7 +723,7 @@ function climate_fill (climatology, gcm) {
         x: parseInt(item.year),
         y: parseFloat((parseFloat(item.pmean) + parseFloat(item.pstd)).toFixed(2))
       })),
-      key: 'a',
+      key: 'H',
       color: '#9dc3e6'
     },
     {
@@ -728,7 +741,7 @@ function climate_fill (climatology, gcm) {
         x: parseInt(item.year),
         y: parseFloat((parseFloat(item.pmean) - parseFloat(item.pstd)).toFixed(2))
       })),
-      key: 'b',
+      key: 'L',
       color: '#9dc3e6'
     }
   ]
@@ -739,7 +752,7 @@ function climate_fill (climatology, gcm) {
         x: parseInt(item.year),
         y: parseFloat((parseFloat(item.tmean) + parseFloat(item.tstd)).toFixed(2))
       })),
-      key: 'a',
+      key: 'H',
       color: '#f4b183'
     },
     {
@@ -757,7 +770,7 @@ function climate_fill (climatology, gcm) {
         x: parseInt(item.year),
         y: parseFloat((parseFloat(item.tmean) - parseFloat(item.tstd)).toFixed(2))
       })),
-      key: 'b',
+      key: 'L',
       color: '#f4b183'
     }
   ]
@@ -1099,11 +1112,13 @@ function practices_fill (crop, hazard, level) {
       table = table + '<td class="col-4"><table class="table borderless">'
       if (records[i].barrier_1 !== '') {
         table = table + '<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/' + records[i].barrier_1 + '.png" class="rounded practices_img_icons" alt="' + records[i].barrier_1 + '" /></td>' +
-                          '<td>' + records[i].b1_exp + '</td></tr>'
+                          '<td><strong>' + records[i].barrier_1 + '</strong> - ' +
+                          records[i].b1_exp + '</td></tr>'
       }
       if (records[i].barrier_2 !== '') {
         table = table + '<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/' + records[i].barrier_2 + '.png" class="rounded practices_img_icons" alt="' + records[i].barrier_2 + '" /></td>' +
-                          '<td>' + records[i].b2_exp + '</td></tr>'
+                        '<td><strong>' + records[i].barrier_2 + '</strong> - ' +
+                        records[i].b2_exp + '</td></tr>'
       }
       table = table + '</table></td>'
       table = table + '</tr>'
@@ -1199,8 +1214,9 @@ function practices_fill (crop, hazard, level) {
       const key = p_merged[i].csa_cat
       const barrier1Keys = Object.keys(p_merged_barriers[key])
       barrier1Keys.forEach((item, index) => {
-        table += `<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/${item}.png" class="rounded practices_img_icons" alt="' + ${item} + '" /></td>`
-        table += `<td>${p_merged_barriers[key][item].toString().split(',').join(', ')}</td></tr>`
+        const icon = (item === 'Social/Cultural') ? 'Labour' : item
+        table += `<tr><td><img src="https://ciat-dapa.github.io/pakistan_web/img/barriers/${icon}.png" class="rounded practices_img_icons" alt="' + ${item} + '" /></td>`
+        table += `<td><strong>${item}</strong> - ${p_merged_barriers[key][item].toString().split(',').join(', ')}</td></tr>`
       })
       table = table + '</table></td>'
       table = table + '</tr>'
@@ -1267,7 +1283,7 @@ function enablers_load () {
 
   let enablers = null
   if (type_agg === 'dist') { enablers = data.filter(function (item) { return item.district === district }) } else if (type_agg === 'prov') { enablers = data.filter(function (item) { return item.province === province }) } else { enablers = data }
-  enablers = enablers.sort((a, b) => d3.descending(parseFloat(a.rank), parseFloat(b.rank)))
+  enablers = enablers.sort((a, b) => d3.ascending(parseFloat(a.rank), parseFloat(b.rank)))
   // enablers = data;
   // Default fill
   enablers_fill(enablers)
@@ -1279,9 +1295,9 @@ function enablers_fill (data) {
   table = ''
   $('#enablers_table  > tbody').html(table)
   for (const item in data) {
-    const icon = (data[item].type !== 'Finance/ Market')
-      ? `<img src="./img/enablers/${data[item].type}.png" />`
-      : '<div class="icon_finance_market"><img src="./img/enablers/Finance.png" /><br /><img src="./img/enablers/Market.png" /></div'
+    const icon = (data[item].name === 'Price regulations')
+      ? '<img src="./img/enablers/Inst & Org.png" />'
+      : `<img src="./img/enablers/${data[item].type}.png" />`
     table = table + '<tr>'
     table += `<th>${icon}</th>`
     table = table + '<td>' + data[item].name + '</td>'
