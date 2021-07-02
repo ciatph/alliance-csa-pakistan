@@ -1,0 +1,179 @@
+.nvtooltip {
+  margin-top: -50px;
+}
+
+#title {
+  padding-top: 20px;
+}
+
+.cropping_pie svg {
+  height: 300px;
+  width: 100%;
+}
+
+.crop_c_Breeding {
+  background-color: #8ebf3f;
+  cursor: pointer;
+}
+
+.crop_c_Growing {
+  background-color: #cad32b;
+  cursor: pointer;
+}
+
+.crop_c_Harvesting {
+  background-color: #f5d226;
+  cursor: pointer;
+}
+
+.crop_c_Planting {
+  background-color: #f68b33;
+  cursor: pointer;
+}
+
+.climatology_plot {
+  height: 500px;
+  width: 100%;
+}
+
+.indicator_plot {
+  height: 500px;
+  width: 100%;
+}
+
+.indicator_map {
+  height: 500px;
+  width: 100%;
+}
+
+#map_scale {
+  width: 100px;
+  height: 50px;
+}
+
+.legend {
+  line-height: 18px;
+  color: #555;
+}
+
+.info {
+  padding: 6px 8px;
+
+  background: white;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+.info h4 {
+  margin: 0 0 5px;
+  color: #777;
+}
+
+.cell_green {
+  background-color: #eaf1dd;
+}
+
+.cell_yellow {
+  background-color: #fdfed0;
+}
+
+.cell_orange {
+  background-color: #fde9d9;
+}
+
+.cell_red {
+  background-color: #ffb3b3;
+}
+
+.practices_img_icons {
+  height: 60px;
+  width: 60px;
+}
+
+.practices_item {
+  background-color: #cccccc;
+  padding: 12px 12px 12px;
+}
+
+.practices_border {
+  border-width: 1px;
+  border-style: solid;
+  border-color: #ffffff;
+}
+
+.practices_table {
+  border: 1px solid #ffffff;
+}
+
+.borderless td,
+.borderless th {
+  border: none;
+}
+
+table.table-bordered {
+  border: 1px solid #ffffff;
+  margin-top: 20px;
+}
+
+table.table-bordered>thead>tr>th {
+  border: 1px solid #ffffff;
+}
+
+table.table-bordered>tbody>tr>td {
+  border: 1px solid #ffffff;
+}
+
+.practices_id {
+  font-size: 70px;
+  color: #e8e8e8;
+  font-weight: 900;
+}
+
+/** --- Maps ---**/
+.aggregation_select {
+  float: right;
+}
+
+.map-label {
+  position: absolute;
+  bottom: 0;left: -50%;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.map-label-content {
+  order: 1;
+  position: relative; left: -50%;
+  background-color: #fff;
+  border-radius: 5px;
+  border-width: 2px;
+  border-style: solid;
+  border-color: #444;
+  padding: 3px;
+  white-space: nowrap;
+}
+
+.map-label-arrow {
+  order: 2;
+  width: 0px; height: 0px; left: 50%;
+  border-style: solid;
+  border-color: #444 transparent transparent transparent;
+  border-width: 10px 6px 0 6px;
+  margin-left: -6px;
+}
+
+/** --- Components ---**/
+
+.text-label-info {
+  font-size: 14px;
+}
+
+#mngt_practice_label {
+  color: gray;
+}
+
+.icon_finance_market img {
+  width: 50%;
+}
