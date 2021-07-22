@@ -6,17 +6,37 @@ on:
       - dev
 
 jobs:
-  deploy:
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v1
+      - name: Install Dependencies
         run: npm install
       - name: Lint
         run: npm run lint
+      - name: Archive Development Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: public
+          path: public
+
+  deploy:
+    name: Deploy
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v1
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: public
+          path: public
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only hosting:pakistan-web-dev
         env:
-          FIREBASE_TOKEN : ${{ secrets.FIREBASE_API_TOKEN }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
