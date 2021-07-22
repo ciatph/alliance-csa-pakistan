@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "pakistan-web-dev",
     "public": "public",
     "ignore": [
       "firebase.json",
