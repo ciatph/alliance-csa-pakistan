@@ -6,15 +6,35 @@ on:
       - master
 
 jobs:
-  deploy:
+  lint:
+    name: Lint
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
-      - name: Install modules
+      - name: Checkout the repository
+        uses: actions/checkout@v1
+      - name: Install Dependencies
         run: npm install
       - name: Lint
         run: npm run lint
-      - name: Deploy
+      - name: Archive Development Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: public
+          path: public
+
+  deploy:
+    name: Deploy
+    needs: lint
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v1
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: public
+          path: public
+      - name: Deploy to Github Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
