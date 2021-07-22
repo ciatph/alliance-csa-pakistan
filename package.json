@@ -1,5 +1,5 @@
 {
-  "name": "pakistan_web_dev",
+  "name": "alliance-csa-pakistan",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ciatph/pakistan_web_dev.git"
+    "url": "git+https://github.com/ciatph/alliance-csa-pakistan.git"
   },
   "eslintConfig": {
     "env": {
@@ -43,9 +43,9 @@
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ciatph/pakistan_web_dev/issues"
+    "url": "https://github.com/ciatph/alliance-csa-pakistan/issues"
   },
-  "homepage": "https://github.com/ciatph/pakistan_web_dev#readme",
+  "homepage": "https://github.com/ciatph/alliance-csa-pakistan#readme",
   "devDependencies": {
     "browser-sync": "^2.26.14",
     "eslint": "^7.24.0",

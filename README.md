@@ -1,4 +1,4 @@
-## pakistan_web_dev
+## alliance-csa-pakistan
 
 > This forked repository serves as a stash for storing the requested updates and follow-up fixes for the original website on https://ciat-dapa.github.io/pakistan_web/.
 >
@@ -12,6 +12,8 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Deployment](#deployment)
+  - [Production](#production)
+  - [Development](#development)
 
 
 ### Requirements
@@ -22,10 +24,10 @@
 ## Installation
 
 1. Clone this repository.  
-`git clone https://github.com/ciatph/pakistan_web_dev.git`
+`git clone https://github.com/ciatph/alliance-csa-pakistan.git`
 2. Install dependencies.  
    ```
-   cd pakistan_web_dev
+   cd alliance-csa-pakistan
    npm install
    ```
 
@@ -45,11 +47,11 @@
 ## Deployment
 
 ### Production
-- Push updates into the `master` branch to trigger GitHub workflows CI/CD to the gh-pages branch. Updates will be viewable on https://ciatph.github.io/pakistan_web_dev after the [deployment](https://github.com/ciatph/pakistan_web_dev/actions) has finished.
+- Push updates into the `master` branch to trigger GitHub workflows CI/CD to the gh-pages branch. Updates will be viewable on https://ciatph.github.io/alliance-csa-pakistan after the [deployment](https://github.com/ciatph/alliance-csa-pakistan/actions) has finished.
 - Alternatively, static files from the `/public` directory can also be hosted from any web server that can serve HTML, CSS, JavaScript and CSV files.
 
 ### Development
-- Push updates into the `dev` branch to trigger GitHub workflows CI/CD to firebase hosting. Updates will be viewable on https://pakistan-web-dev.web.app after the [deployment](https://github.com/ciatph/pakistan_web_dev/actions) has finished.
+- Push updates into the `dev` branch to trigger GitHub workflows CI/CD to firebase hosting. Updates will be viewable on https://pakistan-web-dev.web.app after the [deployment](https://github.com/ciatph/alliance-csa-pakistan/actions) has finished.
 
 @ciatph  
 20210427
