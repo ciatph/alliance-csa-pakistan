@@ -1,11 +1,13 @@
 ## pakistan_web_dev
 
-> This forked repository serves as a personal stash for storing the requested updates and follow-up fixes for the original website on https://ciat-dapa.github.io/pakistan_web/.
+> This forked repository serves as a stash for storing the requested updates and follow-up fixes for the original website on https://ciat-dapa.github.io/pakistan_web/.
 >
-> Test Site is available on https://ciatph.github.io/pakistan_web_dev. 
+> **Production Site** is available on https://ciatph.github.io/alliance-csa-pakistan  
+> **Test Site** is available on https://pakistan-web-dev.web.app
 
 ### Content
 
+- [Content](#content)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -42,7 +44,12 @@
 
 ## Deployment
 
-Push updates into the dev branch to trigger GitHub workflows ci/cd to the gh-pages branch. Updates will be viewable on https://ciatph.github.io/pakistan_web_dev after the deployment has finished.
+### Production
+- Push updates into the `master` branch to trigger GitHub workflows CI/CD to the gh-pages branch. Updates will be viewable on https://ciatph.github.io/pakistan_web_dev after the [deployment](https://github.com/ciatph/pakistan_web_dev/actions) has finished.
+- Alternatively, static files from the `/public` directory can also be hosted from any web server that can serve HTML, CSS, JavaScript and CSV files.
+
+### Development
+- Push updates into the `dev` branch to trigger GitHub workflows CI/CD to firebase hosting. Updates will be viewable on https://pakistan-web-dev.web.app after the [deployment](https://github.com/ciatph/pakistan_web_dev/actions) has finished.
 
 @ciatph  
 20210427

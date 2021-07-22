@@ -1,14 +1,14 @@
-name: Deploy to Github Pages
+name: Deploy to Firebase Hosting
 
 on:
   push:
-    branches:
-      - master
+    branches: 
+      - dev
 
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v1
@@ -25,7 +25,7 @@ jobs:
   deploy:
     name: Deploy
     needs: lint
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v1
@@ -34,9 +34,9 @@ jobs:
         with:
           name: public
           path: public
-      - name: Deploy to Github Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          publish_branch: gh-pages
+          args: deploy --only hosting:pakistan-web-dev
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
