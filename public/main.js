@@ -933,7 +933,7 @@ function climate_indicator_fill (indicator, season) {
   legend.onAdd = function (map) {
     const div = L.DomUtil.create('div', 'info legend')
     div.innerHTML += '<h4>Scale (' + climate_indicator_let + ')</h4>' +
-                    '<div id="map_scale"><svg></svg><span>hello</span></div>' +
+                    '<div id="map_scale"><svg></svg><span></span></div>' +
                     '<label>' + indicator_labels[climate_indicator_let] + '</label>'
     return div
   }
