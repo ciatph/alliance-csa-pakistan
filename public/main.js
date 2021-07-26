@@ -1513,18 +1513,18 @@ async function renderPractices (level = 'dist') {
   cbo_practices_hazard.val('All')
 
   // Set the event change for both controls
-  const crop_val = (level === 'dist') ? cbo_practices_crop.val() : 'All'
-
   if (level === 'dist') {
     cbo_practices_crop.on('change', function (e) {
       practices_fill(cbo_practices_crop.val(), cbo_practices_hazard.val(), level)
     })
   }
   cbo_practices_hazard.on('change', function (e) {
-    practices_fill(crop_val, cbo_practices_hazard.val(), level)
+    const cropVal = $('#cbo_practices_agg').val() === 'dist' ? cbo_practices_crop.val() : 'All'
+    practices_fill(cropVal, cbo_practices_hazard.val(), level)
   })
 
   // Default fill
+  const crop_val = (level === 'dist') ? cbo_practices_crop.val() : 'All'
   practices_fill(crop_val, cbo_practices_hazard.val(), level)
 }
 
